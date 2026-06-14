@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'users',
+    'catalog',
+    'clinics',
+    'doctors',
 ]
 
 MIDDLEWARE = [
