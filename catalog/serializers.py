@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Speciality, RankType
+from .models import Speciality, RankType, RankPrice
 
 
 class SpecilatySerializers(serializers.ModelSerializer):
@@ -11,4 +11,9 @@ class SpecilatySerializers(serializers.ModelSerializer):
 class RankTypeSerializers(serializers.ModelSerializer):
     class Meta:
         model = RankType
+        fields = '__all__'
+
+class RankPriceSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = RankPrice
         fields = '__all__'
