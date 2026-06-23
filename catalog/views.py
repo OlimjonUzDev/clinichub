@@ -5,16 +5,16 @@ from .serializers import SpecilatySerializers, RankTypeSerializers, RankPriceSer
 from users.permissions import IsAdmin
 
 class SpecialityViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = Speciality.objects.all()
     serializer_class = SpecilatySerializers
 
 class RankTypeViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = RankType.objects.all()
     serializer_class = RankTypeSerializers
 
 class RankPriceViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = RankPrice.objects.all()
     serializer_class = RankPriceSerializers

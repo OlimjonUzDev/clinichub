@@ -5,4 +5,5 @@ class Clinic(models.Model):
     address = models.CharField(max_length=225)
     phone_number = models.CharField(max_length=225)
 
-# Create your models here.
+    def __str__(self):
+        return self.name

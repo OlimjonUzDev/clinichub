@@ -13,11 +13,17 @@ class Doctor(models.Model):
     bio = models.TextField(blank=True)
     experience_years = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.user.username
+
 class DoctorSchedule(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     weekday = models.IntegerField()
     start_time = models.TimeField()
     end_time = models.TimeField()
+
+    def __str__(self):
+        return str(self.doctor)
 
 
 

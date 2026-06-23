@@ -5,7 +5,7 @@ from .serializers import ClinicSerializers
 from users.permissions import IsAdmin
 
 class ClinicViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = Clinic.objects.all()
     serializer_class = ClinicSerializers
 

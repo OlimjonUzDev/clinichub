@@ -4,8 +4,14 @@ class Speciality(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
 
+    def __str__(self):
+        return self.name
+
 class RankType(models.Model):
     name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
 
 class RankPrice(models.Model):
     CONSULTATION_CHOICES = (

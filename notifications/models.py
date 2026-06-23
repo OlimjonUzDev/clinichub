@@ -8,3 +8,6 @@ class MessageTemplate(models.Model):
     )
     trigger_type = models.CharField(max_length=225, choices=TRIGGER_CHOICES)
     template_text = models.TextField()
+
+    def __str__(self):
+        return self.trigger_type

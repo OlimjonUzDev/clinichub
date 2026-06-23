@@ -6,12 +6,12 @@ from users.permissions import IsAdmin
 
 
 class DoctorViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializers
 
 class DoctorScheduleViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     queryset = DoctorSchedule.objects.all()
     serializer_class = DoctorScheduleSerializers
 

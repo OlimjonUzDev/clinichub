@@ -20,6 +20,9 @@ class Appointment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
 
+    def __str__(self):
+        return f"{self.patient} -> {self.doctor} ({self.date} {self.time})"
+
 class Rating(models.Model):
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -27,4 +30,7 @@ class Rating(models.Model):
     score = models.IntegerField()
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.doctor} - {self.score}/5"
     

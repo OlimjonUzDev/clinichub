@@ -6,4 +6,6 @@ class Patient(models.Model):
     birth_date = models.DateField()
     address = models.CharField(max_length=225, blank=True)
     
+    def __str__(self):
+        return self.user.username
 
