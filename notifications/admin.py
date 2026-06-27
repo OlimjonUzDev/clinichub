@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import MessageTemplate
+from .models import NotificationTemplate
 
-admin.site.register(MessageTemplate)
+admin.site.register(NotificationTemplate)

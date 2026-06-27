@@ -1,11 +1,11 @@
 from rest_framework import viewsets
 
-from .models import MessageTemplate
-from .serializers import MessageTemplateSerializers
+from .models import NotificationTemplate
+from .serializers import NotificationTemplateSerializers
 from users.permissions import IsAdmin
 
-class MessageTemplateViewSet(viewsets.ModelViewSet):
+class NotificationTemplateViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAdmin]
-    queryset = MessageTemplate.objects.all()
-    serializer_class = MessageTemplateSerializers
+    queryset = NotificationTemplate.objects.all()
+    serializer_class = NotificationTemplateSerializers
     

@@ -1,13 +1,31 @@
 from django.db import models
 
-class MessageTemplate(models.Model):
-    TRIGGER_CHOICES = (
-        ('appointment_created', 'Appointment Created'),
-        ('status_changed', 'Status Changed'),
-        ('reminder', 'Reminder')
+from users.models import User
+
+class NotificationTemplate(models.Model):
+    STATUS_CHOICES = (
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+        ('push', 'Push')
     )
-    trigger_type = models.CharField(max_length=225, choices=TRIGGER_CHOICES)
-    template_text = models.TextField()
+    name = models.CharField(max_length=225)
+    body_uz = models.TextField()
+    body_ru = models.TextField()
+    type = models.CharField(max_length=225, choices=STATUS_CHOICES)
 
     def __str__(self):
-        return self.trigger_type
+        return self.name
+
+class NotficationLog(models.Model):
+    STATUS_CHOICES = (
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+        ('push', 'Push')
+    )
+    template = models.ForeignKey(NotificationTemplate,on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    type = models.CharField(max_length=225, choices=STATUS_CHOICES)
+    is_sent = models.BooleanField(default=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
