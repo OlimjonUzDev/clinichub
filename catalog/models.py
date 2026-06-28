@@ -7,7 +7,7 @@ class Speciality(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.name_uz
 
 class RankType(models.Model):
     name_uz = models.CharField(max_length=50)
@@ -15,7 +15,7 @@ class RankType(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.name_uz
 
 class RankPrice(models.Model):
     rannk_type = models.ForeignKey(RankType, on_delete=models.CASCADE)
