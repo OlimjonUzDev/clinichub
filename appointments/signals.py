@@ -7,5 +7,5 @@ from notifications.services import send_sms
 def send_appointment_sms(sender, instance, created, **kwargs):
     if created:
         phone_number = instance.patient.user.phone_number
-        message = f"Hurmatli {instance.patient.user.username}, sizning navbatingiz {instance.date} kuni {instance.time}ga qabul qilindi"
+        message = f"Hurmatli {instance.patient.user.username}, sizning navbatingiz {instance.start_time.strftime('%Y-%m-%d')} kuni soat {instance.start_time.strftime('%H:%M')}ga qabul qilindi"
         send_sms(phone_number, message)

@@ -26,9 +26,15 @@ class UserListView(generics.ListAPIView):
 class DashboardView(APIView):
     # permission_classes = [IsAdmin]
     def get(self, request):
+        from clinics.models import Clinic
         return Response({
-            'total_doctors': Doctor.objects.count(),
-            'total_patients': Patient.objects.count(),
-            'total_appointments': Appointment.objects.count()
+            'total_doctors':              Doctor.objects.count(),
+            'total_patients':             Patient.objects.count(),
+            'total_appointments':         Appointment.objects.count(),
+            'total_clinics':              Clinic.objects.count(),
+            'upcoming_appointments':      Appointment.objects.filter(status='pending').count(),
+            'ongoing_appointments':       Appointment.objects.filter(status='confirmed').count(),
+            'completed_appointments':     Appointment.objects.filter(status='completed').count(),
+            'cancelled_appointments':     Appointment.objects.filter(status='cancelled').count(),
         })
 

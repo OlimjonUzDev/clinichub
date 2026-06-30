@@ -16,7 +16,7 @@ class NotificationTemplate(models.Model):
     def __str__(self):
         return self.name
 
-class NotficationLog(models.Model):
+class NotificationLog(models.Model):
     STATUS_CHOICES = (
         ('sms', 'SMS'),
         ('email', 'Email'),

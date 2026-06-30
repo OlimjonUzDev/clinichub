@@ -2,7 +2,7 @@ from django.db import models
 
 from appointments.models import Appointment
 from patients.models import Patient
-from doctors.models import Doctor
+from doctors.models import Doctor  # DoctorPayout uchun
 
 class Invoice(models.Model):
     INVOICE_CHOICES = (
@@ -21,20 +21,7 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice #{self.id} - {self.appointment}"
-    
-class InsuranceClaim(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected')
-    )
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    claim_number = models.CharField(max_length=225)
-    amount = models.DecimalField(max_digits=50, decimal_places=2)
-    status = models.CharField(max_length=225, choices=STATUS_CHOICES)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    
+
 class DoctorPayout(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),

@@ -6,7 +6,7 @@ from .views import MedicalCenterViewSet, ClinicTypeViewSet, ClinicViewSet
 router = DefaultRouter()
 router.register(r'medicalcenter', MedicalCenterViewSet)
 router.register(r'clinictype', ClinicTypeViewSet)
-router.register(r'clinics', ClinicViewSet)
+router.register(r'clinics', ClinicViewSet, basename='clinic')
 
 urlpatterns = [
     path('', include(router.urls)),

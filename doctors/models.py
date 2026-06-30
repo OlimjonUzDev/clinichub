@@ -20,7 +20,8 @@ class Doctor(models.Model):
     bio_ru = models.TextField(blank=True)
     experience_years = models.IntegerField(default=0)
     avatar = models.URLField(blank=True)
-    gender = models.CharField(max_length=225, choices=GENDER_CHOICES, default='erkak', blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='erkak', blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username

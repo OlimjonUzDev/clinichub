@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import NotificationTemplate, NotficationLog
+from .models import NotificationTemplate, NotificationLog
 
 class NotificationTemplateSerializers(serializers.ModelSerializer):
     class Meta:
@@ -9,5 +9,5 @@ class NotificationTemplateSerializers(serializers.ModelSerializer):
 
 class NotificationLogSerializers(serializers.ModelSerializer):
     class Meta:
-        model = NotficationLog
+        model = NotificationLog
         fields = '__all__'

@@ -18,7 +18,7 @@ class RankType(models.Model):
         return self.name_uz
 
 class RankPrice(models.Model):
-    rannk_type = models.ForeignKey(RankType, on_delete=models.CASCADE)
+    rank_type = models.ForeignKey(RankType, on_delete=models.CASCADE)
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=225, default='UZS')

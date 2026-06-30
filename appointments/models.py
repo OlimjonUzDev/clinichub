@@ -20,10 +20,10 @@ class Appointment(models.Model):
     status = models.CharField(max_length=225, choices=APPOINTMENT_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.patient} -> {self.doctor} ({self.date} {self.time})"
+        return f"{self.patient} -> {self.doctor} ({self.start_time})"
 
 class Rating(models.Model):
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)

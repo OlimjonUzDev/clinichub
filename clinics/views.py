@@ -17,5 +17,9 @@ class ClinicViewSet(viewsets.ModelViewSet):
     queryset = Clinic.objects.all()
     serializer_class = ClinicSerializers
 
+    def get_queryset(self):
+        from django.db.models import Count
+        return Clinic.objects.annotate(doctors_count=Count('doctor'))
+
 
 # Create your views here.

@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from .models import NotificationTemplate, NotficationLog
+from .models import NotificationTemplate, NotificationLog
 from .serializers import NotificationTemplateSerializers, NotificationLogSerializers
 from users.permissions import IsAdmin
 
@@ -10,6 +10,6 @@ class NotificationTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationTemplateSerializers
 
 class NotificationLogViewSet(viewsets.ModelViewSet):
-    queryset = NotficationLog.objects.all()
+    queryset = NotificationLog.objects.all()
     serializer_class = NotificationLogSerializers
     

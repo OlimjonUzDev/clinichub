@@ -6,4 +6,3 @@ class PatientSerializers(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = '__all__'
-        depth = 1

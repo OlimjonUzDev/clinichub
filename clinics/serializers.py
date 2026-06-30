@@ -13,6 +13,8 @@ class ClinicTypeSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 class ClinicSerializers(serializers.ModelSerializer):
+    doctors_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Clinic
         fields = '__all__'

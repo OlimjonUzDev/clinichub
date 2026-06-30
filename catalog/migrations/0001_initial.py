@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('clinic', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='clinics.clinic')),
-                ('rannk_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='catalog.ranktype')),
+                ('rank_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='catalog.ranktype')),
             ],
         ),
     ]
