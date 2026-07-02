@@ -18,6 +18,12 @@ class RankType(models.Model):
         return self.name_uz
 
 class RankPrice(models.Model):
+    CONSULTATION_CHOICES = (
+        ('video', 'Video'),
+        ('voice', 'Voice'),
+        ('chat', 'Chat'),
+        ('in_person', 'In-person'),
+    )
     rank_type = models.ForeignKey(RankType, on_delete=models.CASCADE)
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -25,3 +31,4 @@ class RankPrice(models.Model):
     duration_min = models.PositiveIntegerField(default=30)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='in_person')
