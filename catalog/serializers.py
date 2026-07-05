@@ -17,4 +17,3 @@ class RankPriceSerializers(serializers.ModelSerializer):
     class Meta:
         model = RankPrice
         fields = '__all__'
-        depth = 1

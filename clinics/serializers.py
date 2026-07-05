@@ -18,4 +18,3 @@ class ClinicSerializers(serializers.ModelSerializer):
     class Meta:
         model = Clinic
         fields = '__all__'
-        depth = 1
