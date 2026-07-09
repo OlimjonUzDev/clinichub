@@ -12,19 +12,19 @@ from .permissions import IsAdmin
 
 
 class RegisterView(generics.CreateAPIView):
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = RegisterSerializers
 
 
 class UserListView(generics.ListAPIView):
-    # permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin]
     queryset = User.objects.all()
     serializer_class = UserSerializers
 
 
 class DashboardView(APIView):
-    # permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin]
     def get(self, request):
         from clinics.models import Clinic
         return Response({

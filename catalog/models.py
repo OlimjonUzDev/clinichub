@@ -4,7 +4,7 @@ from clinics.models import Clinic
 class Speciality(models.Model):
     name_uz = models.CharField(max_length=50)
     name_ru = models.CharField(max_length=50)
-    description = models.TextField(blank=True)
+    
 
     def __str__(self):
         return self.name_uz

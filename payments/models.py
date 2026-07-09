@@ -22,10 +22,10 @@ class Payment(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='payments')
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='payments')
     provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+    stripe_charge_id = models.CharField(max_length=50, blank=True, null=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     currency = models.CharField(max_length=10, default='UZS')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    # To'lov tizimi bergan tranzaksiya ID si
     transaction_id = models.CharField(max_length=255, blank=True, unique=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
