@@ -1,8 +1,18 @@
 from django.db import models
+from django.core.validators import RegexValidator
 
 from users.models import User
 from catalog.models import Speciality, RankType
 from clinics.models import Clinic
+
+name_validator = RegexValidator(
+    regex=r"^[A-Za-zА-Яа-яЁёʻʼ'\-\s]+$",
+    message="Ism faqat harflardan iborat bo'lishi kerak.",
+)
+telegram_validator = RegexValidator(
+    regex=r"^@?[A-Za-z0-9_]{5,32}$",
+    message="Telegram username noto'g'ri formatda.",
+)
 
 class Doctor(models.Model):
     GENDER_CHOICES = (
@@ -13,9 +23,9 @@ class Doctor(models.Model):
     speciality = models.ForeignKey(Speciality, on_delete=models.CASCADE)
     rank_type = models.ForeignKey(RankType, on_delete=models.CASCADE)
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
-    telegram_username = models.CharField(max_length=225, blank=True)
-    name_uz = models.CharField(max_length=225)
-    name_ru = models.CharField(max_length=225)
+    telegram_username = models.CharField(max_length=225, blank=True, validators=[telegram_validator])
+    name_uz = models.CharField(max_length=225, validators=[name_validator])
+    name_ru = models.CharField(max_length=225, validators=[name_validator])
     bio_uz = models.TextField(blank=True)
     bio_ru = models.TextField(blank=True)
     experience_years = models.IntegerField(default=0)

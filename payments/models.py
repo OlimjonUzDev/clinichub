@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 from billing.models import Invoice
 from patients.models import Patient
@@ -6,9 +7,7 @@ from patients.models import Patient
 
 class Payment(models.Model):
     PROVIDER_CHOICES = (
-        ('payme', 'Payme'),
-        ('click', 'Click'),
-        ('uzum', 'Uzum Bank'),
+        ('stripe', 'Stripe'),
         ('cash', 'Naqd pul'),
     )
     STATUS_CHOICES = (
@@ -23,8 +22,8 @@ class Payment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='payments')
     provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
     stripe_charge_id = models.CharField(max_length=50, blank=True, null=True)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    currency = models.CharField(max_length=10, default='UZS')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    currency = models.CharField(max_length=10, default='USD')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     transaction_id = models.CharField(max_length=255, blank=True, unique=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

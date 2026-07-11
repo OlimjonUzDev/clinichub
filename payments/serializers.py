@@ -17,7 +17,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = '__all__'
         # Bu maydonlar faqat to'lov tizimi tomonidan to'ldiriladi
-        read_only_fields = ['status', 'transaction_id', 'paid_at', 'created_at']
+        read_only_fields = ['status', 'transaction_id', 'paid_at', 'created_at', 'stripe_charge_id']
 
     def validate(self, attrs):
         invoice = attrs.get('invoice')

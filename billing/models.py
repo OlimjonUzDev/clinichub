@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 from appointments.models import Appointment
 from patients.models import Patient
@@ -13,7 +14,7 @@ class Invoice(models.Model):
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     invoice_number = models.CharField(max_length=225, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField(max_length=10, default='UZS')
     is_tax_inclusive = models.BooleanField(default=True)
     status = models.CharField(max_length=225, choices=INVOICE_CHOICES, default='pending')
@@ -28,7 +29,7 @@ class DoctorPayout(models.Model):
         ('paid', 'Paid')
     )
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     period_from = models.DateField()
     period_to = models.DateField()
     status = models.CharField(max_length=225, choices=STATUS_CHOICES)
