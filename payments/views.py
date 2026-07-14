@@ -40,9 +40,12 @@ class StripeWebhookView(APIView):
     def post(self, request):
         payload = request.body
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+        if not webhook_secret:
+            return Response(status=503)
 
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, settings.STRIPE_WEBHOOK_SECRET)
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
         except (ValueError, stripe.error.SignatureVerificationError):
             return Response(status=400)
 
@@ -53,7 +56,7 @@ class StripeWebhookView(APIView):
                 payment.status = 'paid'
                 payment.paid_at = timezone.now()
                 payment.save()
-                PaymentTransaction.objects.create(payment=payment, raw_data=event)
+                PaymentTransaction.objects.create(payment=payment, raw_data=event.to_dict())
 
         return Response(status=200)
 

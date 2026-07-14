@@ -35,3 +35,5 @@ class DoctorPayout(models.Model):
     status = models.CharField(max_length=225, choices=STATUS_CHOICES)
     paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    
