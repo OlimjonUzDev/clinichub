@@ -1,15 +1,19 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Doctor, DoctorSchedule
 from .serializers import DoctorSerializers, DoctorScheduleSerializers
 from .permissions import IsAdminOrOwnerDoctor, IsAdminOrOwnerSchedule
 from users.permissions import IsAdminOrReadOnly
 
+class CustomPagination(PageNumberPagination):
+    page_size = 6
 
 class DoctorViewSet(viewsets.ModelViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializers
+    pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ['name_uz', 'name_ru']
 
@@ -22,7 +26,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     
 
 class DoctorScheduleViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrOwnerSchedule()]
+    permission_classes = [IsAdminOrOwnerSchedule]
     queryset = DoctorSchedule.objects.all()
     serializer_class = DoctorScheduleSerializers
 
