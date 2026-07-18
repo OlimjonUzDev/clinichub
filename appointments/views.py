@@ -1,5 +1,6 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
 from .models import Appointment, Rating
 from .serializers import AppointmentSerializers, RatingSerializers
@@ -16,6 +17,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ['patient__name_uz', 'patient__name_ru']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return Appointment.objects.all()
+        return Appointment.objects.filter(Q(patient__user=user) | Q(doctor__user=user))
 
     def get_permissions(self):
         if self.action in ['list', 'create']:
