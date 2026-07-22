@@ -86,11 +86,50 @@ class AppointmentViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'status': 'confirmed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_end_time_before_start_time_rejected(self):
+        url = reverse('appointment-list')
+        self.client.force_authenticate(self.patient_user)
+        data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
+                'start_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 10, 20)),
+                'end_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 10, 00)),}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_double_booking_rejected(self):
+        url = reverse('appointment-list')
+        self.client.force_authenticate(self.patient_user)
+        data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
+                'start_time': timezone.make_aware(datetime.datetime(2026, 7, 18, 9, 40)),
+                'end_time': timezone.make_aware(datetime.datetime(2026, 7, 18, 10, 00)),}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Doktor bu vaqt band", str(response.data))
 
+    def test_no_schedule_day_rejected(self):
+        url = reverse('appointment-list')
+        self.client.force_authenticate(self.patient_user)
+        data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
+                'start_time': timezone.make_aware(datetime.datetime(2026, 7, 19, 10, 20)),
+                'end_time': timezone.make_aware(datetime.datetime(2026, 7, 19, 10, 40)),}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Doktor bu kun ishlamaydi', str(response.data))
 
+    def test_outside_schedule_hours_rejected(self):
+        url = reverse('appointment-list')
+        self.client.force_authenticate(self.patient_user)
+        data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
+                'start_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 19, 20)),
+                'end_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 19, 40)),}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Vaqt doktorning ish jadvalidan tashqarida", str(response.data))
 
-
-
-
-
+    def test_valid_appointment_created_successfully(self):
+        url = reverse('appointment-list')
+        self.client.force_authenticate(self.patient_user)
+        data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
+                'start_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 15, 20)),
+                'end_time': timezone.make_aware(datetime.datetime(2026, 7, 25, 15, 40)),}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
