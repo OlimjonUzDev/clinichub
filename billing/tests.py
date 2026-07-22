@@ -18,7 +18,7 @@ User = get_user_model()
 class BillingViewSetTestCase(APITestCase):
 
     def setUp(self):
-        patcher = patch('notifications.services.send_sms')
+        patcher = patch('appointments.signals.send_sms')
         self.mock_send_sms = patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -69,3 +69,49 @@ class BillingViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.patient_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_admin_can_list_payouts(self):
+        admin = User.objects.create_user(username='admin2', password='qwerty123', role='admin')
+        url = reverse('doctorpayout-list')
+        self.client.force_authenticate(admin)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_doctor_cannot_list_payouts(self):
+        url = reverse('doctorpayout-list')
+        self.client.force_authenticate(self.doctor_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_owner_doctor_can_retrieve_payout(self):
+        url = reverse('doctorpayout-detail', args=[self.payout.pk])
+        self.client.force_authenticate(self.doctor_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_other_doctor_cannot_retrieve_payout(self):
+        other_doctor_user = User.objects.create_user(username='karim', password='qwerty123', role='doctor')
+        other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
+        url = reverse('doctorpayout-detail', args=[self.payout.pk])
+        self.client.force_authenticate(other_doctor_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_can_update_payouts_status(self):
+        admin = User.objects.create_user(username='asil', password='password123', role='admin')
+        url = reverse('doctorpayout-detail', args=[self.payout.pk])
+        self.client.force_authenticate(admin)
+        response = self.client.patch(url, {'status': 'paid'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.payout.refresh_from_db()
+        self.assertEqual(self.payout.status, 'paid')
+
+    def test_owner_doctor_cannot_update_payout(self):
+        url = reverse('doctorpayout-detail', args=[self.payout.pk])
+        self.client.force_authenticate(self.doctor_user)
+        response = self.client.patch(url, {'status': 'paid'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+
+

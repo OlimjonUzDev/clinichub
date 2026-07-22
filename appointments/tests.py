@@ -19,7 +19,7 @@ User = get_user_model()
 class AppointmentViewSetTestCase(APITestCase):
 
     def setUp(self):
-       patcher = patch('notifications.services.send_sms')
+       patcher = patch('appointments.signals.send_sms')
        self.mock_send_sms = patcher.start()
        self.addCleanup(patcher.stop)
 
