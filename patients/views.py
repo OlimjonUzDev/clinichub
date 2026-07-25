@@ -16,6 +16,12 @@ class PatientViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ['name_uz', 'name_ru']
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in ('admin', 'doctor'):
+            return Patient.objects.all()
+        return Patient.objects.filter(user=user)
+
     def get_permissions(self):
         if self.action == 'list':
             return [IsAdminOrDoctor()]
