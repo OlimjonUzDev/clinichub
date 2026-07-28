@@ -61,12 +61,14 @@ class StripeWebhookView(APIView):
         return Response(status=200)
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated,IsAdmin]
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
 
     def get_queryset(self):
         queryset = Payment.objects.all()
+        user = self.request.user
+        if user.role != 'admin':
+            queryset = queryset.filter(patient__user=user)
 
         patient_id = self.request.query_params.get('patient_id')
         if patient_id:
@@ -75,8 +77,12 @@ class PaymentViewSet(viewsets.ModelViewSet):
         invoice_id = self.request.query_params.get('invoice_id')
         if invoice_id:
             queryset = queryset.filter(invoice_id=invoice_id)
-
         return queryset
+
+    def get_permissions(self):
+        if self.action in ['list', 'create', 'retrieve']:
+            return [IsAuthenticated()]
+        return [IsAdmin()]
 
 
 class PaymentTransactionViewSet(viewsets.ReadOnlyModelViewSet):

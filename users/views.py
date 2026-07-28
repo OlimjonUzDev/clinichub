@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import User
 from .serializers import RegisterSerializers, UserSerializers
@@ -36,5 +36,15 @@ class DashboardView(APIView):
             'ongoing_appointments':       Appointment.objects.filter(status='confirmed').count(),
             'completed_appointments':     Appointment.objects.filter(status='completed').count(),
             'cancelled_appointments':     Appointment.objects.filter(status='cancelled').count(),
+        })
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            'id': request.user.id,
+            'username': request.user.username,
+            'role': request.user.role,
         })
 

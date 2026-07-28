@@ -22,12 +22,19 @@ class PaymentSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         invoice = attrs.get('invoice')
         amount = attrs.get('amount')
+        request = self.context.get('request')
 
-        # Invoice allaqachon to'langanmi?
+        if request and request.user.role != 'admin':
+            if invoice and invoice.patient.user != request.user:
+                raise serializers.ValidationError('Bu invoice sizga tegishli emas')
+            if attrs.get('patient') and attrs['patient'].user != request.user:
+                raise serializers.ValidationError('Boshqa bemor nomidan tolov yarat olmaysiz')
+
+        
         if invoice and invoice.status == 'paid':
             raise serializers.ValidationError("Bu invoice allaqachon to'langan.")
 
-        # Summa to'g'rimi?
+        
         if invoice and amount and amount != invoice.amount:
             raise serializers.ValidationError(
                 f"Summa mos emas. To'g'ri summa: {invoice.amount} UZS."

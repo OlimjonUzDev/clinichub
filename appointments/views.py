@@ -1,5 +1,8 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework import status
+
 from django.db.models import Q
 
 from .models import Appointment, Rating
@@ -17,6 +20,24 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ['patient__name_uz', 'patient__name_ru']
+
+    def create(self, request, *args, **kwargs):
+        serializers = self.get_serializer(data=request.data)
+        if request.user.role == 'patient':
+            serializers.fields.pop('patient', None)
+            patient = getattr(request.user, 'patient', None)
+            if not patient:
+                return Response({'detail': 'Avval bemor profilingizni yarating'}, status=400)
+
+        serializers.is_valid(raise_exception=True)
+
+        if request.user.role == 'patient':
+            serializers.save(patient=patient)
+        else:
+            serializers.save()
+
+        headers = self.get_success_headers(serializers.data)
+        return Response(serializers.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_queryset(self):
         user = self.request.user

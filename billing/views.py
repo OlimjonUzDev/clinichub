@@ -9,8 +9,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializers
 
+    def get_queryset(self):
+        queryset = Invoice.objects.all()
+        if self.request.user.role != 'admin':
+            queryset = queryset.filter(patient__user=self.request.user)
+        return queryset
+
     def get_permissions(self):
-        if self.action in ['list', 'create']:
+        if self.action == 'create':
             return [IsAdmin()]
         return [IsAdminOrOwnerInvoice()]
         
