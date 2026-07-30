@@ -10,11 +10,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5 
     env:
       INFOBIP_API_KEY: ${{ secrets.INFOBIP_API_KEY }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+      DB_NAME: test_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_PORT: 5432
 
     steps:
     - uses: actions/checkout@v4
