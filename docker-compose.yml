@@ -4,14 +4,18 @@ services:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/user/src/app
+      - .:/app
     ports:
       - "8000:8000"
+    environment:
+      - DB_HOST=db
     env_file:
       - .env
+    depends_on:
+      - db
 
   db:
-    image: postgres:latest
+    image: postgres:18
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -19,7 +23,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib.postgresql/data
+      - postgres_data:/var/lib/postgresql
 
 volumes:
   postgres_data:
