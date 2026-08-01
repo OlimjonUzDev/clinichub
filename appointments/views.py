@@ -54,6 +54,20 @@ class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializers
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        appointment = serializer.validated_data['appointment']
+        serializer.save(patient=appointment.patient, doctor=appointment.doctor)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return Rating.objects.all()
+        return Rating.objects.filter(Q(patient__user=user) | Q(doctor__user=user))
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [IsAuthenticated()]

@@ -37,3 +37,18 @@ class RatingSerializers(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = '__all__'
+        read_only_fields = ['patient', 'doctor']
+
+    def validate(self, attrs):
+        request = self.context['request']
+        appointment = attrs.get('appointment', getattr(self.instance, 'appointment', None))
+
+        if appointment and request.user.role != 'admin':
+            patient = getattr(request.user, 'patient', None)
+            if not patient or appointment.patient_id != patient.id:
+                raise serializers.ValidationError("Bu tashrifga baho qo'yish huquqingiz yo'q")
+
+        if appointment and appointment.status != 'completed':
+            raise serializers.ValidationError("Faqat yakunlangan tashrif uchun baho qoldirish mumkun")
+
+        return attrs
