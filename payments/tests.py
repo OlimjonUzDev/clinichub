@@ -44,11 +44,18 @@ class PaymentsViewSetTestCase(APITestCase):
 
         self.payment = Payment.objects.create(invoice=self.invoice, patient=self.patient, provider='stripe', amount=100000)
 
-    def test_non_admin_cannot_list_payments(self):
+    def test_patient_can_list_own_payments_only(self):
+        other_patient = Patient.objects.create(user=self.other_patient_user, name_uz='Baxti', name_ru='Бахти', birth_date='2000-05-05')
+        other_appointmen = Appointment.objects.create(patient=other_patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 50)),)
+        other_invoice = Invoice.objects.create(appointment=other_appointmen, patient=other_patient, invoice_number='INV-003', amount=70000)
+        Payment.objects.create(invoice=other_invoice, patient=other_patient, provider='stripe', amount=70000)
         url = reverse('payment-list')
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payment_ids = [item['id'] for item in response.data['results']]
+        self.assertIn(self.payment.pk, payment_ids)
+        self.assertEqual(len(payment_ids), 1)
 
     def test_admin_can_list_payments(self):
         url = reverse('payment-list')

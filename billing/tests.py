@@ -58,11 +58,18 @@ class BillingViewSetTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_patient_cannot_list_invoice(self):
+    def test_patient_can_list_own_invoice_only(self):
+        other_user = User.objects.create_user(username='Baxti', password='qwerty55', role='patient')
+        other_patient = Patient.objects.create(user=other_user, name_uz='Baxti', name_ru='Бахти', birth_date='2000-05-05')
+        other_appointmen = Appointment.objects.create(patient=other_patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 50)),)
+        Invoice.objects.create(appointment=other_appointmen, patient=other_patient, invoice_number='INV-002', amount=50000)
         url = reverse('invoice-list')
         self.client.force_authenticate(self.patient_user)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        invoice_ids = [item['id'] for item in response.data['results']]
+        self.assertIn(self.invoice.pk, invoice_ids)
+        self.assertEqual(len(invoice_ids), 1)
 
     def test_owner_patient_can_retrieve_invoice(self):
         url = reverse('invoice-detail', args=[self.invoice.pk])
