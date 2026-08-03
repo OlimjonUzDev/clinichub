@@ -1,6 +1,7 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from .models import Doctor, DoctorSchedule
 from .serializers import DoctorSerializers, DoctorScheduleSerializers
@@ -30,4 +31,21 @@ class DoctorScheduleViewSet(viewsets.ModelViewSet):
     queryset = DoctorSchedule.objects.all()
     serializer_class = DoctorScheduleSerializers
 
+    def create(self, request, *args, **kwargs):
+        serializers = self.get_serializer(data=request.data)
+        if request.user.role == 'doctor':
+            serializers.fields.pop('doctor', None)
+            doctor = getattr(request.user, 'doctor', None)
+            if not doctor:
+                return Response({'detail': 'Avval doctor profilingizni yarating'}, status=400)
+            
+        serializers.is_valid(raise_exception=True)
+
+        if request.user.role == 'doctor':
+            serializers.save(doctor=doctor)
+        else:
+            serializers.save()
+
+        headers = self.get_success_headers(serializers.data)
+        return Response(serializers.data, status=status.HTTP_201_CREATED, headers=headers)
 
