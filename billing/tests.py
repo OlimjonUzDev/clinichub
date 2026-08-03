@@ -84,12 +84,18 @@ class BillingViewSetTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_doctor_cannot_list_payouts(self):
+    def test_doctor_can_list_own_payouts_only(self):
+        other_doctor_user = User.objects.create_user(username='karim2', password='qwerty123', role='doctor')
+        other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
+        DoctorPayout.objects.create(doctor=other_doctor, amount=300000, period_from=datetime.date(2026, 7, 1), period_to=datetime.date(2026, 7, 31), status='pending')
         url = reverse('doctorpayout-list')
         self.client.force_authenticate(self.doctor_user)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payout_ids = [item['id'] for item in response.data['results']]
+        self.assertIn(self.payout.pk, payout_ids)
+        self.assertEqual(len(payout_ids), 1)
+        
     def test_owner_doctor_can_retrieve_payout(self):
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
         self.client.force_authenticate(self.doctor_user)
@@ -102,7 +108,7 @@ class BillingViewSetTestCase(APITestCase):
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
         self.client.force_authenticate(other_doctor_user)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_admin_can_update_payouts_status(self):
         admin = User.objects.create_user(username='asil', password='password123', role='admin')
