@@ -125,6 +125,28 @@ class BillingViewSetTestCase(APITestCase):
         response = self.client.patch(url, {'status': 'paid'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_other_patient_cannot_retrieve_invoice(self):
+        other_user = User.objects.create_user(username='Ali', password='qwerty11', role='patient')
+        url = reverse('invoice-detail', args=[self.invoice.pk])
+        self.client.force_authenticate(other_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patient_cannot_update_invoice(self):
+        url = reverse('invoice-detail', args=[self.invoice.pk])
+        self.client.force_authenticate(self.patient_user)
+        response = self.client.patch(url, {'status': 'paid'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_can_update_invoice(self):
+        admin = User.objects.create_user(username='admin3', password='adminpass1', role='admin')
+        url = reverse('invoice-detail', args=[self.invoice.pk])
+        self.client.force_authenticate(admin)
+        response = self.client.patch(url, {'status': 'paid'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.invoice.refresh_from_db()
+        self.assertEqual(self.invoice.status, 'paid')
+
 
 
 

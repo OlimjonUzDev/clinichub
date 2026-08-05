@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
-from .models import User
+from .models import User, OTPCode
 
 class UserSerializers(serializers.ModelSerializer):
     class Meta:
@@ -22,3 +22,10 @@ class RegisterSerializers(serializers.ModelSerializer):
         return value
     
     password = serializers.CharField(write_only=True)
+
+class OTPRequestSerializers(serializers.Serializer):
+    phone_number = serializers.CharField()
+
+class OTPVerifySerializers(serializers.Serializer):
+    phone_number = serializers.CharField()
+    code = serializers.CharField(max_length=6)

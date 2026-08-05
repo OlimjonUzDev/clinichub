@@ -30,7 +30,7 @@ class DoctorsViewSetTestCase(APITestCase):
         url = reverse('doctor-list')
         self.client.force_authenticate(user=None)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_patient_can_list_doctors(self):
         url = reverse('doctor-list')
@@ -42,7 +42,7 @@ class DoctorsViewSetTestCase(APITestCase):
         url = reverse('doctor-detail', args=[self.doctor.pk])
         self.client.force_authenticate(user=None)
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_authenticated_can_retrieve_doctor(self):
         url = reverse('doctor-detail', args=[self.doctor.pk])
@@ -113,6 +113,40 @@ class DoctorsViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.admin_user)
         response = self.client.patch(url, {'bio_uz': 'Admin tomonidan yangilangan'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authenticated_can_list_doctor_schedules(self):
+        url = reverse('doctorschedule-list')
+        self.client.force_authenticate(self.patient_user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_doctor_can_create_own_schedule(self):
+        url = reverse('doctorschedule-list')
+        self.client.force_authenticate(self.doctor_user)
+        data = {'weekday': 0, 'start_time': '09:00', 'end_time': '18:00'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        schedule = DoctorSchedule.objects.get(pk=response.data['id'])
+        self.assertEqual(schedule.doctor_id, self.doctor.pk)
+
+    def test_doctor_cannot_create_schedule_for_other_doctor(self):
+        other_doctor_user = User.objects.create_user(username='doctor4', password='qwerty789', role='doctor')
+        other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.speciality, rank_type=self.rank_type, clinic=self.clinic, name_uz='Bekzod', name_ru='Бекзод')
+        url = reverse('doctorschedule-list')
+        self.client.force_authenticate(self.doctor_user)
+        data = {'doctor': other_doctor.pk, 'weekday': 1, 'start_time': '09:00', 'end_time': '18:00'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        schedule = DoctorSchedule.objects.get(pk=response.data['id'])
+        self.assertEqual(schedule.doctor_id, self.doctor.pk)
+
+    def test_duplicate_schedule_same_weekday_rejected(self):
+        DoctorSchedule.objects.create(doctor=self.doctor, weekday=0, start_time='09:00', end_time='18:00')
+        url = reverse('doctorschedule-list')
+        self.client.force_authenticate(self.doctor_user)
+        data = {'weekday': 0, 'start_time': '10:00', 'end_time': '19:00'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 

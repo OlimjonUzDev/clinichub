@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
+from django.utils import timezone
 
 class UserManager(DjangoUserManager):
     def create_superuser(self, username, email, password, **extra_fields):
@@ -21,3 +22,13 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+class OTPCode(models.Model):
+    phone_number = models.CharField(max_length=20)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    def is_valid(self):
+        return not self.is_used and self.attempts < 5 and timezone.now() < self.expires_at

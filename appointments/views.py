@@ -1,3 +1,5 @@
+import datetime
+from rest_framework.views import APIView
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -7,7 +9,7 @@ from django.db.models import Q
 
 from .models import Appointment, Rating
 from .serializers import AppointmentSerializers, RatingSerializers
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.permissions import IsPatient
 from .permissions import IsAdminOrOwnerAppointments, IsAdminOrOwnerRating
 
@@ -74,4 +76,27 @@ class RatingViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [IsPatient()]
         return [IsAdminOrOwnerRating()]
+
+class DoctorBusySlotsView(APIView):
+    """Berilgan doktor va sanadagi band vaqt oralig'larini qaytaradi.
+    Bemor kim ekanligi (appointment egasi) chiqarilmaydi — faqat vaqt oralig'i,
+    shuning uchun boshqa bemorlarning maxfiyligi buzilmaydi."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        doctor_id = request.query_params.get('doctor')
+        date_str = request.query_params.get('date')
+        if not doctor_id or not date_str:
+            return Response({'detail': "'doctor' va 'date' parametrlari talab qilinadi"}, status=400)
+        try:
+            datetime.date.fromisoformat(date_str)
+        except ValueError:
+            return Response({'detail': "'date' formati noto'g'ri (YYYY-MM-DD)"}, status=400)
+
+        qs = Appointment.objects.filter(
+            doctor_id=doctor_id,
+            start_time__date=date_str,
+        ).exclude(status='cancelled').values('start_time', 'end_time')
+
+        return Response(list(qs))
 

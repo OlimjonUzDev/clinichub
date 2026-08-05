@@ -20,7 +20,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
+            return [IsAdminOrReadOnly()]
         if self.action in ['create', 'destroy']:
             return [IsAdminOrReadOnly()]
         return [IsAdminOrOwnerDoctor()]
@@ -38,6 +38,8 @@ class DoctorScheduleViewSet(viewsets.ModelViewSet):
             doctor = getattr(request.user, 'doctor', None)
             if not doctor:
                 return Response({'detail': 'Avval doctor profilingizni yarating'}, status=400)
+            if DoctorSchedule.objects.filter(doctor=doctor, weekday=request.data.get('weekday')).exists():
+                return Response({'detail': 'Bu kun uchun jadval allaqachon mavjud'}, status=400)
             
         serializers.is_valid(raise_exception=True)
 
