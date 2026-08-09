@@ -17,10 +17,8 @@ from doctors.models import Doctor, DoctorSchedule
 User = get_user_model()
 
 class AppointmentViewSetTestCase(APITestCase):
-    """AppointmentViewSet endpointlari va Appointment validatsiya qoidalarini tekshiradi."""
 
     def setUp(self):
-       """Testlar uchun klinika, bemor, doktor, jadval va bitta tashrif tayyorlaydi."""
        patcher = patch('appointments.signals.send_sms')
        self.mock_send_sms = patcher.start()
        self.addCleanup(patcher.stop)
@@ -41,14 +39,12 @@ class AppointmentViewSetTestCase(APITestCase):
        self.doctor_schedule = DoctorSchedule.objects.create(doctor=self.doctor, weekday=5, start_time='08:00', end_time='18:00')
 
     def test_appointment_list(self):
-        """Autentifikatsiyadan o'tgan bemor tashriflar ro'yxatini olishi mumkinligini tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_permission_dendied_for_anonymous_create(self):
-        """Anonim foydalanuvchi tashrif yarata olmasligini (401) tekshiradi."""
         self.client.force_authenticate(user=None)
         url = reverse('appointment-list')
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
@@ -58,21 +54,18 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_anonymous_cannot_retrieve(self):
-        """Anonim foydalanuvchi tashrif tafsilotlarini ko'ra olmasligini (401) tekshiradi."""
         url = reverse('appointment-detail', args=[self.appointment.pk])
         self.client.force_authenticate(user=None)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_owner_can_retrieve(self):
-        """Tashrif egasi bo'lgan bemor uni ko'ra olishini (200) tekshiradi."""
         url = reverse('appointment-detail', args=[self.appointment.pk])
         self.client.force_authenticate(self.patient.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_other_patient_cannot_retrieve(self):
-        """Boshqa bemor birovning tashrifini ko'ra olmasligini (404) tekshiradi."""
         self.patient_user2 = User.objects.create_user(username='abdumalik', password='zxcv345', role='patient')
         self.patient2 = Patient.objects.create(user=self.patient_user2, name_uz='Abdumalik', name_ru='Абдумалик', birth_date='2001-01-01')
         url = reverse('appointment-detail', args=[self.appointment.pk])
@@ -81,14 +74,12 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_doctor_can_update(self):
-        """Tashrifga tegishli doktor uni yangilay olishini (200) tekshiradi."""
         url = reverse('appointment-detail', args=[self.appointment.pk])
         self.client.force_authenticate(self.doctor_user)
         response = self.client.patch(url, {'notes': 'Yangilangan izoh'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_can_update_any_appointment(self):
-        """Admin har qanday tashrifni yangilay olishini (200) tekshiradi."""
         admin_user = User.objects.create_user(username='admin3', password='iyuth11', role='admin')
         url = reverse('appointment-detail', args=[self.appointment.pk])
         self.client.force_authenticate(admin_user)
@@ -96,7 +87,6 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_end_time_before_start_time_rejected(self):
-        """Tugash vaqti boshlanishdan oldin bo'lsa so'rov rad etilishini (400) tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
@@ -106,7 +96,6 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_double_booking_rejected(self):
-        """Doktor band bo'lgan vaqtga qayta yozilish rad etilishini (400) tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
@@ -117,7 +106,6 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertIn("Doktor bu vaqt band", str(response.data))
 
     def test_no_schedule_day_rejected(self):
-        """Doktor ishlamaydigan kunga yozilish rad etilishini (400) tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
@@ -128,7 +116,6 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertIn('Doktor bu kun ishlamaydi', str(response.data))
 
     def test_outside_schedule_hours_rejected(self):
-        """Ish jadvalidan tashqari soatga yozilish rad etilishini (400) tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,
@@ -139,7 +126,6 @@ class AppointmentViewSetTestCase(APITestCase):
         self.assertIn("Vaqt doktorning ish jadvalidan tashqarida", str(response.data))
 
     def test_valid_appointment_created_successfully(self):
-        """To'g'ri va band bo'lmagan vaqt bilan tashrif muvaffaqiyatli yaratilishini (201) tekshiradi."""
         url = reverse('appointment-list')
         self.client.force_authenticate(self.patient_user)
         data = {'patient': self.patient.pk, 'doctor': self.doctor.pk, 'clinic': self.clinic.pk,

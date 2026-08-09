@@ -20,16 +20,6 @@ def _log_and_send(user, phone_number, message):
 
 @receiver(pre_save, sender=Appointment)
 def _stash_old_status(sender, instance, **kwargs):
-    """Appointment saqlanishidan oldin uning eski statusini vaqtincha eslab qoladi.
-
-    Bu holat keyinroq post_save signalida status o'zgarganini aniqlash
-    (masalan, confirmed yoki cancelled bo'lganini bilish) uchun ishlatiladi.
-
-    Parametrlar:
-        sender: signalni yuborgan model klassi (Appointment).
-        instance: saqlanayotgan Appointment obyekti.
-        kwargs: qo'shimcha signal argumentlari.
-    """
     if instance.pk:
         old = Appointment.objects.filter(pk=instance.pk).values_list('status', flat=True).first()
         instance._old_status = old
@@ -39,18 +29,6 @@ def _stash_old_status(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Appointment)
 def send_appointment_sms(sender, instance, created, **kwargs):
-    """Appointment yaratilganda yoki statusi o'zgarganda bemor va doktorga SMS yuboradi.
-
-    Yangi tashrif yaratilganda bemor va doktorga xabar yuboriladi.
-    Status "confirmed" yoki "cancelled"ga o'zgarganda tegishli tomonga
-    (kim bekor qilganiga qarab) bildirishnoma yuboriladi.
-
-    Parametrlar:
-        sender: signalni yuborgan model klassi (Appointment).
-        instance: saqlangan Appointment obyekti.
-        created: obyekt yangi yaratilgan bo'lsa True.
-        kwargs: qo'shimcha signal argumentlari.
-    """
     patient_user = instance.patient.user
     doctor_user = instance.doctor.user
     date_str = instance.start_time.strftime('%Y-%m-%d')

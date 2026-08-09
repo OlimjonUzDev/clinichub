@@ -7,28 +7,11 @@ from .permissions import IsAdminOrOwnerPrescription, IsAdminOrOwnerPrescriptionI
 
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
-    """Retseptlar uchun CRUD endpointlarini taqdim etadi.
-
-    Ruxsat IsAdminOrOwnerPrescription orqali boshqariladi: admin barcha
-    retseptlarga, bemor va shifokor esa faqat o'ziga tegishli retseptlarga
-    kira oladi. Ro'yxatni `patient_id` va `appointment_id` query parametrlari
-    orqali qo'shimcha filtrlash mumkin.
-    """
-
     permission_classes = [IsAdminOrOwnerPrescription]
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
 
     def get_queryset(self):
-        """Joriy foydalanuvchining roli va query parametrlariga mos retseptlar ro'yxatini qaytaradi.
-
-        Bemor uchun faqat o'ziga tegishli, shifokor uchun faqat o'zi yozgan
-        retseptlar qaytariladi. Qo'shimcha ravishda `patient_id` va
-        `appointment_id` query parametrlari orqali natija filtrlanadi.
-
-        Qaytaradi:
-            QuerySet: joriy foydalanuvchi va filtrlarga mos Prescription obyektlari.
-        """
         queryset = Prescription.objects.all()
         user = self.request.user
 
@@ -48,26 +31,11 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
 
 
 class PrescriptionItemViewSet(viewsets.ModelViewSet):
-    """Retsept bandlari (dori-darmonlar) uchun CRUD endpointlarini taqdim etadi.
-
-    Ruxsat IsAdminOrOwnerPrescriptionItem orqali boshqariladi: admin barcha
-    bandlarga, bemor va shifokor esa faqat o'zlariga tegishli retseptning
-    bandlariga kira oladi.
-    """
-
     permission_classes = [IsAdminOrOwnerPrescriptionItem]
     queryset = PrescriptionItem.objects.all()
     serializer_class = PrescriptionItemSerializer
 
     def get_queryset(self):
-        """Joriy foydalanuvchining roliga mos retsept bandlari ro'yxatini qaytaradi.
-
-        Bemor uchun faqat o'ziga tegishli retseptlarning bandlari, shifokor
-        uchun esa faqat o'zi yozgan retseptlarning bandlari qaytariladi.
-
-        Qaytaradi:
-            QuerySet: joriy foydalanuvchiga mos PrescriptionItem obyektlari.
-        """
         queryset = PrescriptionItem.objects.all()
         user = self.request.user
 

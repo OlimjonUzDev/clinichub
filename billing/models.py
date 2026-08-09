@@ -6,13 +6,6 @@ from patients.models import Patient
 from doctors.models import Doctor  # DoctorPayout uchun
 
 class Invoice(models.Model):
-    """Bemorga taqdim etilgan hisob-fakturani ifodalaydi.
-
-    Har bir Invoice bitta Appointment bilan bir martalik (OneToOne) bog'langan
-    va tegishli Patient'ga tegishli bo'ladi. `amount` maydoni manfiy bo'lmasligi
-    MinValueValidator orqali tekshiriladi, `status` esa 'pending', 'paid' yoki
-    'refunded' qiymatlaridan birini oladi.
-    """
     INVOICE_CHOICES = (
         ('pending', 'Pending'),
         ('paid', 'Paid'),
@@ -31,13 +24,6 @@ class Invoice(models.Model):
         return f"Invoice #{self.id} - {self.appointment}"
 
 class DoctorPayout(models.Model):
-    """Shifokorga muayyan davr uchun to'lanadigan mablag'ni ifodalaydi.
-
-    Har bir DoctorPayout bitta Doctor'ga ForeignKey orqali bog'lanadi va
-    `period_from` - `period_to` oralig'ini qamrab oladi. `amount` maydoni
-    manfiy bo'lmasligi MinValueValidator orqali tekshiriladi, `status` esa
-    'pending' yoki 'paid' qiymatlaridan birini oladi.
-    """
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('paid', 'Paid')

@@ -7,16 +7,6 @@ from .models import Payment
 
 @receiver(post_save, sender=Payment)
 def update_invoice_on_payment(sender, instance, **kwargs):
-    """Payment saqlanganda unga bog'liq Invoice statusini avtomatik yangilaydi.
-
-    Payment.status "paid" bo'lsa tegishli invoice "paid" ga, "refunded"
-    bo'lsa invoice "refunded" ga o'tkaziladi.
-
-    Parametrlar:
-        sender: Signalni yuborgan model klassi (Payment).
-        instance: Saqlangan Payment obyekti.
-        **kwargs: Django signal tomonidan uzatiladigan qo'shimcha argumentlar.
-    """
     # To'lov muvaffaqiyatli bo'lganda invoice ni avtomatik "paid" ga o'tkazadi
     if instance.status == 'paid':
         invoice = instance.invoice

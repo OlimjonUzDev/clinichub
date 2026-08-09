@@ -8,11 +8,6 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
-
-Izoh (UZ): Bu fayl ClinicHub Django loyihasining sozlamalar (settings)
-modulidir. Bu yerda ilovalar ro'yxati, middleware'lar, ma'lumotlar bazasi,
-autentifikatsiya (JWT), CORS, statik fayllar va logging kabi butun
-loyiha uchun umumiy konfiguratsiyalar belgilanadi.
 """
 
 from pathlib import Path
