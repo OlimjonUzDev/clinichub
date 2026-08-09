@@ -6,6 +6,15 @@ from patients.models import Patient
 
 
 class Payment(models.Model):
+    """Bitta invoice bo'yicha amalga oshirilgan to'lovni ifodalaydi.
+
+    provider (stripe/naqd pul) va status (kutilmoqda/to'landi/xato/bekor
+    qilindi/qaytarildi) maydonlari orqali to'lov holati kuzatiladi.
+    invoice va patient maydonlari mos ravishda Invoice va Patient
+    modellariga ForeignKey orqali bog'lanadi, amount MinValueValidator(0)
+    bilan manfiy bo'lishdan himoyalangan, transaction_id esa unikal.
+    """
+
     PROVIDER_CHOICES = (
         ('stripe', 'Stripe'),
         ('cash', 'Naqd pul'),
@@ -34,6 +43,12 @@ class Payment(models.Model):
 
 
 class PaymentTransaction(models.Model):
+    """To'lov tizimidan (masalan, Stripe) kelgan har bir callback/webhook ning to'liq logini saqlaydi.
+
+    payment maydoni orqali tegishli Payment obyektiga bog'lanadi, raw_data
+    esa webhook orqali kelgan xom JSON ma'lumotni saqlaydi.
+    """
+
     # To'lov tizimidan kelgan har bir callback/webhook ning to'liq logi
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='transactions')
     raw_data = models.JSONField()

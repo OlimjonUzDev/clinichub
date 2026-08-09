@@ -15,6 +15,17 @@ telegram_validator = RegexValidator(
 )
 
 class Doctor(models.Model):
+    """Shifokorning profilini ifodalaydi.
+
+    Foydalanuvchi (user), mutaxassislik (speciality), toifa (rank_type) va
+    klinika (clinic) bilan bog'langan. ``revenue_percentage`` shifokorga
+    tegishli daromad ulushini (0 dan 1 gacha), ``auto_payout`` esa
+    to'lovlarni avtomatik o'tkazish yoqilgan-yoqilmaganligini bildiradi.
+    ``name_uz``/``name_ru`` maydonlari ``name_validator`` orqali faqat
+    harflardan iborat bo'lishi tekshiriladi, ``telegram_username`` esa
+    ``telegram_validator`` orqali tasdiqlanadi.
+    """
+
     GENDER_CHOICES = (
         ('erkak', 'Erkak'),
         ('ayol', 'Ayol')
@@ -41,6 +52,12 @@ class Doctor(models.Model):
         return self.user.username
 
 class DoctorSchedule(models.Model):
+    """Shifokorning haftalik ish jadvalini (kun va vaqt oralig'ini) ifodalaydi.
+
+    Har bir shifokor uchun bir hafta kunida faqat bitta jadval yozuvi
+    bo'lishi ``Meta.unique_together`` orqali ta'minlanadi.
+    """
+
     WEEKDAY_CHOICES = (
         (0, 'Dushanba'),
         (1, 'Seshanba'),
@@ -56,6 +73,8 @@ class DoctorSchedule(models.Model):
     end_time = models.TimeField()
 
     class Meta:
+        """Bir shifokor uchun bir hafta kuni faqat bitta jadval bo'lishini cheklaydi."""
+
         unique_together = ('doctor', 'weekday')
 
     def __str__(self):

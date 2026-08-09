@@ -16,8 +16,10 @@ from appointments.models import Appointment
 User = get_user_model()
 
 class BillingViewSetTestCase(APITestCase):
+    """Invoice va DoctorPayout ViewSet'lari uchun ruxsat va CRUD testlari."""
 
     def setUp(self):
+        """Testlar uchun klinika, bemor, shifokor, appointment, invoice va payout yaratadi."""
         patcher = patch('appointments.signals.send_sms')
         self.mock_send_sms = patcher.start()
         self.addCleanup(patcher.stop)
@@ -52,6 +54,7 @@ class BillingViewSetTestCase(APITestCase):
         )
 
     def test_admin_can_list_invoices(self):
+        """Admin barcha hisob-fakturalar ro'yxatini ko'ra olishini tekshiradi."""
         admin_user = User.objects.create_user(username='admin1', password='adminpass1', role='admin')
         url = reverse('invoice-list')
         self.client.force_authenticate(admin_user)
@@ -59,6 +62,7 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_patient_can_list_own_invoice_only(self):
+        """Bemor faqat o'ziga tegishli hisob-fakturani ko'rishini, boshqasinikini ko'rmasligini tekshiradi."""
         other_user = User.objects.create_user(username='Baxti', password='qwerty55', role='patient')
         other_patient = Patient.objects.create(user=other_user, name_uz='Baxti', name_ru='Бахти', birth_date='2000-05-05')
         other_appointmen = Appointment.objects.create(patient=other_patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 50)),)
@@ -72,12 +76,14 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(len(invoice_ids), 1)
 
     def test_owner_patient_can_retrieve_invoice(self):
+        """Hisob-faktura egasi bo'lgan bemor uni muvaffaqiyatli ola olishini tekshiradi."""
         url = reverse('invoice-detail', args=[self.invoice.pk])
         self.client.force_authenticate(self.patient_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_can_list_payouts(self):
+        """Admin barcha shifokor to'lovlari ro'yxatini ko'ra olishini tekshiradi."""
         admin = User.objects.create_user(username='admin2', password='qwerty123', role='admin')
         url = reverse('doctorpayout-list')
         self.client.force_authenticate(admin)
@@ -85,6 +91,7 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_doctor_can_list_own_payouts_only(self):
+        """Shifokor faqat o'ziga tegishli to'lovlarni ko'rishini, boshqasinikini ko'rmasligini tekshiradi."""
         other_doctor_user = User.objects.create_user(username='karim2', password='qwerty123', role='doctor')
         other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
         DoctorPayout.objects.create(doctor=other_doctor, amount=300000, period_from=datetime.date(2026, 7, 1), period_to=datetime.date(2026, 7, 31), status='pending')
@@ -97,12 +104,14 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(len(payout_ids), 1)
         
     def test_owner_doctor_can_retrieve_payout(self):
+        """To'lov egasi bo'lgan shifokor uni muvaffaqiyatli ola olishini tekshiradi."""
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
         self.client.force_authenticate(self.doctor_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_other_doctor_cannot_retrieve_payout(self):
+        """Boshqa shifokor o'ziga tegishli bo'lmagan to'lovni ola olmasligini (404) tekshiradi."""
         other_doctor_user = User.objects.create_user(username='karim', password='qwerty123', role='doctor')
         other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
@@ -111,6 +120,7 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_admin_can_update_payouts_status(self):
+        """Admin to'lov statusini 'paid'ga o'zgartira olishini tekshiradi."""
         admin = User.objects.create_user(username='asil', password='password123', role='admin')
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
         self.client.force_authenticate(admin)
@@ -120,12 +130,14 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(self.payout.status, 'paid')
 
     def test_owner_doctor_cannot_update_payout(self):
+        """To'lov egasi bo'lgan shifokor uning statusini o'zgartira olmasligini (403) tekshiradi."""
         url = reverse('doctorpayout-detail', args=[self.payout.pk])
         self.client.force_authenticate(self.doctor_user)
         response = self.client.patch(url, {'status': 'paid'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_other_patient_cannot_retrieve_invoice(self):
+        """Boshqa bemor o'ziga tegishli bo'lmagan hisob-fakturani ola olmasligini (404) tekshiradi."""
         other_user = User.objects.create_user(username='Ali', password='qwerty11', role='patient')
         url = reverse('invoice-detail', args=[self.invoice.pk])
         self.client.force_authenticate(other_user)
@@ -133,12 +145,14 @@ class BillingViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_patient_cannot_update_invoice(self):
+        """Bemor hisob-faktura statusini o'zgartira olmasligini (403) tekshiradi."""
         url = reverse('invoice-detail', args=[self.invoice.pk])
         self.client.force_authenticate(self.patient_user)
         response = self.client.patch(url, {'status': 'paid'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_can_update_invoice(self):
+        """Admin hisob-faktura statusini 'paid'ga o'zgartira olishini tekshiradi."""
         admin = User.objects.create_user(username='admin3', password='adminpass1', role='admin')
         url = reverse('invoice-detail', args=[self.invoice.pk])
         self.client.force_authenticate(admin)

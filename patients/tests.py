@@ -10,8 +10,10 @@ from .models import Patient
 User = get_user_model()
 
 class PatientsViewSetTestCase(APITestCase):
+    """``PatientViewSet`` endpointlari uchun ruxsat va CRUD testlari."""
 
     def setUp(self):
+       """Testlar uchun bemor, egasi, boshqa bemor, admin va doktor foydalanuvchilarini yaratadi."""
        self.owner_user = User.objects.create_user(username='alisher', password='qwertzxc', role='patient')
        self.patient = Patient.objects.create(user=self.owner_user, name_uz='Alisher', name_ru='Алишер', birth_date='2000-01-01')
 
@@ -22,53 +24,62 @@ class PatientsViewSetTestCase(APITestCase):
        self.doctor_user = User.objects.create_user(username='doctor4', password='gfhjgk', role='doctor')
 
     def test_admin_or_doctor_can_list_patient(self):
+        """Admin bemorlar ro'yxatini ko'ra olishini tekshiradi."""
         url = reverse('patient-list')
         self.client.force_authenticate(self.admin_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_patient_cannot_list_patients(self):
+        """Oddiy bemor foydalanuvchi ro'yxatni ko'ra olmasligini tekshiradi."""
         url = reverse('patient-list')
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_anonymous_cannot_retrieve_patient(self):
+        """Autentifikatsiyadan o'tmagan foydalanuvchi bemor ma'lumotini ololmasligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_other_patient_cannot_retrieve_patient(self):
+        """Boshqa bemor foydalanuvchi begona bemor profilini ololmasligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         self.client.force_authenticate(self.other_patient_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_can_retrieve_own_patient(self):
+        """Bemor o'zining profilini olishi mumkinligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_owner_ccan_update_own_patient(self):
+        """Bemor o'zining profilini yangilashi mumkinligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         self.client.force_authenticate(self.owner_user)
         response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_other_patient_cannot_update_patient(self):
+        """Boshqa bemor foydalanuvchi begona bemor profilini yangilay olmasligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         self.client.force_authenticate(self.other_patient_user)
         response = self.client.patch(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_non_admin_cannot_create_patient(self):
+        """Admin bo'lmagan foydalanuvchi yangi bemor yarata olmasligini tekshiradi."""
         url = reverse('patient-list')
         self.client.force_authenticate(self.owner_user)
         response = self.client.post(url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_can_create_patient(self):
+        """Admin yangi bemor yarata olishini tekshiradi."""
         new_user = User.objects.create_user(username='ali', password='zxcvbn', role='patient')
         url = reverse('patient-list')
         self.client.force_authenticate(self.admin_user)
@@ -76,6 +87,7 @@ class PatientsViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_doctor_cannot_retrieve_single_patient(self):
+        """Doktor alohida bemor profilini ololmasligini tekshiradi."""
         url = reverse('patient-detail', args=[self.patient.pk])
         self.client.force_authenticate(self.doctor_user)
         response = self.client.get(url)

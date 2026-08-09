@@ -9,6 +9,14 @@ from users.models import User
 from catalog.models import RankPrice
 
 class Appointment(models.Model):
+    """Bemorning doktorga tashrifini (qabulga yozilishini) ifodalaydi.
+
+    Bemor, doktor va klinikani bog'laydi, tashrif vaqti oralig'i
+    (start_time, end_time), holati (status), konsultatsiya turi
+    hamda bekor qilish sababi va kim tomonidan bekor qilinganini
+    (cancelled_by) saqlaydi.
+    """
+
     APPOINTMENT_CHOICES = (
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
@@ -33,6 +41,12 @@ class Appointment(models.Model):
         return f"{self.patient} -> {self.doctor} ({self.start_time})"
 
 class Rating(models.Model):
+    """Bemor tomonidan yakunlangan tashrifga qoldirilgan bahoni ifodalaydi.
+
+    Har bir tashrif (appointment) uchun bitta baho (OneToOne) bo'ladi,
+    baho 1 dan 5 gacha (score) va ixtiyoriy izoh (comment) saqlanadi.
+    """
+
     appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)

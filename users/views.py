@@ -18,20 +18,36 @@ from notifications.services import send_sms
 
 
 class RegisterView(generics.CreateAPIView):
+    """Login/parol orqali yangi foydalanuvchi (patient) ro'yxatdan o'tkazish endpointi.
+
+    Ruxsat: hammaga ochiq (AllowAny). Yaratish mantig'i RegisterSerializers
+    ichida bo'lib, rolni har doim 'patient' qilib belgilaydi.
+    """
     permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = RegisterSerializers
 
 
 class UserListView(generics.ListAPIView):
+    """Barcha foydalanuvchilar ro'yxatini qaytaradi. Faqat adminlar uchun ruxsat etilgan."""
     permission_classes = [IsAdmin]
     queryset = User.objects.all()
     serializer_class = UserSerializers
 
 
 class DashboardView(APIView):
+    """Admin panel uchun umumiy statistika (doctors, patients, appointments, clinics) endpointi."""
     permission_classes = [IsAdmin]
     def get(self, request):
+        """Doktorlar, bemorlar, klinikalar va uchrashuvlar bo'yicha umumiy sonlarni qaytaradi.
+
+        Parametrlar:
+            request: Kiruvchi HTTP so'rovi.
+
+        Qaytaradi:
+            Response: umumiy va holat bo'yicha (pending/confirmed/completed/
+            cancelled) uchrashuvlar sonini o'z ichiga olgan JSON.
+        """
         from clinics.models import Clinic
         return Response({
             'total_doctors':              Doctor.objects.count(),
@@ -45,9 +61,18 @@ class DashboardView(APIView):
         })
 
 class MeView(APIView):
+    """Joriy autentifikatsiyadan o'tgan foydalanuvchining asosiy ma'lumotlarini qaytaradi."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """So'rov muallifining id, username va role maydonlarini qaytaradi.
+
+        Parametrlar:
+            request: Kiruvchi HTTP so'rovi (request.user autentifikatsiyadan o'tgan bo'lishi shart).
+
+        Qaytaradi:
+            Response: foydalanuvchining id, username va role maydonlarini o'z ichiga olgan JSON.
+        """
         return Response({
             'id': request.user.id,
             'username': request.user.username,
@@ -60,6 +85,20 @@ class RequestOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Telefon raqami uchun yangi OTP kod yaratadi va SMS orqali yuboradi.
+
+        So'nggi 60 soniya ichida shu raqamga kod yuborilgan bo'lsa, so'rov
+        429 (Too Many Requests) statusi bilan rad etiladi. Yangi kod 6 xonali
+        tasodifiy son bo'lib, 5 daqiqa amal qiladi va notifications.services
+        orqali SMS ko'rinishida yuboriladi.
+
+        Parametrlar:
+            request: 'phone_number' maydonini o'z ichiga olgan HTTP so'rovi.
+
+        Qaytaradi:
+            Response: muvaffaqiyatli bo'lsa 200 status va 'Kod yuborildi' xabari;
+            juda tez-tez so'ralsa 429 status.
+        """
         serializer = OTPRequestSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data['phone_number']
@@ -93,6 +132,22 @@ class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Berilgan telefon raqami va kod bo'yicha eng so'nggi ishlatilmagan OTP'ni tasdiqlaydi.
+
+        Kod topilmasa yoki muddati o'tgan/urinishlar limiti tugagan bo'lsa (is_valid())
+        400 status qaytaradi. Kod noto'g'ri bo'lsa attempts sonini oshirib, 400 qaytaradi.
+        To'g'ri bo'lsa, OTP is_used=True qilib belgilanadi, shu telefon raqamiga
+        bog'langan 'patient' foydalanuvchi qidiriladi — topilmasa, parolsiz yangi
+        patient User yaratiladi. Har ikki holatda ham SimpleJWT orqali
+        access va refresh tokenlar generatsiya qilinadi.
+
+        Parametrlar:
+            request: 'phone_number' va 'code' maydonlarini o'z ichiga olgan HTTP so'rovi.
+
+        Qaytaradi:
+            Response: muvaffaqiyatli bo'lsa 200 status bilan 'access', 'refresh'
+            tokenlar va 'is_new_user' bayrog'i; kod noto'g'ri/eskirgan bo'lsa 400 status.
+        """
         serializer = OTPVerifySerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data['phone_number']

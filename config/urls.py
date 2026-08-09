@@ -1,3 +1,13 @@
+"""
+config loyihasi uchun asosiy URL marshrutlash (routing) fayli.
+
+Bu modulda admin panel, har bir ilova (users, catalog, clinics, doctors,
+patients, appointments, billing, notifications, prescriptions, payments)
+uchun API yo'llari, JWT autentifikatsiya endpointlari (token olish,
+yangilash, tekshirish) va Swagger/Redoc orqali API hujjatlarini
+ko'rsatish uchun sxema generatori aniqlanadi.
+"""
+
 from django.contrib import admin
 from django.urls import path, re_path, include
 from drf_yasg import openapi
@@ -11,7 +21,16 @@ from rest_framework_simplejwt.views import(
 )
 
 class JWTSchemaGenerator(OpenAPISchemaGenerator):
+    """Swagger sxemasi uchun Bearer JWT autentifikatsiya usulini qo'shadigan generator."""
+
     def get_security_definitions(self):
+        """
+        Swagger xavfsizlik ta'riflariga 'Bearer' JWT sxemasini qo'shib qaytaradi.
+
+        Qaytaradi:
+            dict: Ota klassdan olingan xavfsizlik ta'riflari lug'ati,
+                unga 'Bearer' (Authorization header orqali) kaliti qo'shilgan holda.
+        """
         security_definitions = super().get_security_definitions()
         security_definitions['Bearer'] = {
             'type': 'apiKey',
@@ -19,7 +38,7 @@ class JWTSchemaGenerator(OpenAPISchemaGenerator):
             'in': 'header'
         }
         return security_definitions
-    
+
 
 schem_view = get_schema_view(
     openapi.Info(

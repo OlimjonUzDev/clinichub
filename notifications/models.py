@@ -3,6 +3,13 @@ from django.db import models
 from users.models import User
 
 class NotificationTemplate(models.Model):
+    """Xabarnoma matnining shabloni (SMS, email yoki push uchun).
+
+    `name` shablon nomini, `body_uz`/`body_ru` esa xabar matnini o'zbek va
+    rus tillarida saqlaydi. `type` maydoni shablon qaysi kanal (sms/email/
+    push) uchun ekanligini `STATUS_CHOICES` orqali belgilaydi.
+    """
+
     STATUS_CHOICES = (
         ('sms', 'SMS'),
         ('email', 'Email'),
@@ -17,6 +24,14 @@ class NotificationTemplate(models.Model):
         return self.name
 
 class NotificationLog(models.Model):
+    """Foydalanuvchiga yuborilgan (yoki yuborilishi kerak bo'lgan) xabarnoma yozuvi.
+
+    Har bir yozuv qaysi `NotificationTemplate` asosida, qaysi `User`ga,
+    qanday matn (`message`) va qaysi kanal (`type`) orqali yuborilganini,
+    shuningdek yuborilganlik holati (`is_sent`) va vaqtini (`sent_at`,
+    `created_at`) saqlaydi.
+    """
+
     STATUS_CHOICES = (
         ('sms', 'SMS'),
         ('email', 'Email'),

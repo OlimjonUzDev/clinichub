@@ -1,6 +1,13 @@
 from django.db import models
     
 class MedicalCenter(models.Model):
+    """Tibbiyot markazini ifodalaydi.
+
+    O'zbek va rus tillaridagi nomi, aloqa ma'lumotlari, manzili, logotipi
+    va veb-sayti kabi maydonlarni, shuningdek ``status`` (active/inactive)
+    holatini saqlaydi.
+    """
+
     STATUS_CHOICES = (
         ('active', 'Active'),
         ('inactive', 'Inactive')
@@ -19,6 +26,11 @@ class MedicalCenter(models.Model):
         return self.name_uz
 
 class ClinicType(models.Model):
+    """Klinika turini (masalan, poliklinika, stomatologiya) ifodalaydi.
+
+    O'zbek va rus tillaridagi nomini saqlaydi.
+    """
+
     name_uz = models.CharField(max_length=225)
     name_ru = models.CharField(max_length=225)
 
@@ -26,6 +38,13 @@ class ClinicType(models.Model):
         return self.name_uz
     
 class Clinic(models.Model):
+    """Muayyan tibbiyot markaziga tegishli klinikani ifodalaydi.
+
+    ``medical_center`` va ``clinic_type`` bilan bog'liq (ForeignKey,
+    ``on_delete=CASCADE``), telefon raqami va ``status`` (active/inactive)
+    holatini saqlaydi.
+    """
+
     STATUS_CHOICES = (
         ('active', 'Active'),
         ('inactive', 'Inactive')

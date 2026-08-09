@@ -19,8 +19,10 @@ from appointments.models import Appointment
 User = get_user_model()
 
 class PaymentsViewSetTestCase(APITestCase):
+    """Payment API endpointlari (ro'yxat, yaratish, Stripe intent, webhook) uchun testlar to'plami."""
 
     def setUp(self):
+        """Testlar uchun klinika, foydalanuvchilar, shifokor, appointment, invoice va to'lov obyektlarini tayyorlaydi."""
         patcher = patch('appointments.signals.send_sms')
         self.mock_send_sms = patcher.start()
         self.addCleanup(patcher.stop)
@@ -45,6 +47,7 @@ class PaymentsViewSetTestCase(APITestCase):
         self.payment = Payment.objects.create(invoice=self.invoice, patient=self.patient, provider='stripe', amount=100000)
 
     def test_patient_can_list_own_payments_only(self):
+        """Bemor faqat o'ziga tegishli to'lovlarni ro'yxatda ko'rishini tekshiradi."""
         other_patient = Patient.objects.create(user=self.other_patient_user, name_uz='Baxti', name_ru='Бахти', birth_date='2000-05-05')
         other_appointmen = Appointment.objects.create(patient=other_patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 7, 19, 9, 50)),)
         other_invoice = Invoice.objects.create(appointment=other_appointmen, patient=other_patient, invoice_number='INV-003', amount=70000)
@@ -58,18 +61,21 @@ class PaymentsViewSetTestCase(APITestCase):
         self.assertEqual(len(payment_ids), 1)
 
     def test_admin_can_list_payments(self):
+        """Admin barcha to'lovlar ro'yxatini muvaffaqiyatli olishini tekshiradi."""
         url = reverse('payment-list')
         self.client.force_authenticate(self.admin_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_payment_amount_mismatch_rejected(self):
+        """Invoice summasiga mos kelmaydigan summada to'lov yaratish rad etilishini tekshiradi."""
         url = reverse('payment-list')
         self.client.force_authenticate(self.admin_user)
         response = self.client.post(url, {'invoice': self.invoice.pk, 'patient': self.patient.pk, 'provider': 'stripe', 'amount': 50000}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_payment_for_already_paid_invoice_rejected(self):
+        """Allaqachon "paid" statusidagi invoice uchun yangi to'lov yaratish rad etilishini tekshiradi."""
         paid_appointment = Appointment.objects.create(patient=self.patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 11, 5, 10, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 11, 5, 10, 50)))
         paid_invoice = Invoice.objects.create(appointment=paid_appointment, patient=self.patient, invoice_number='INV-P002', amount=200000, status='paid')
         url = reverse('payment-list')
@@ -78,6 +84,7 @@ class PaymentsViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_payment_valid_succeeds(self):
+        """To'g'ri ma'lumotlar bilan to'lov yaratish muvaffaqiyatli bo'lishini tekshiradi."""
         url = reverse('payment-list')
         self.client.force_authenticate(self.admin_user)
         response = self.client.post(url, {'invoice': self.invoice.pk, 'patient': self.patient.pk, 'provider': 'stripe', 'amount': 100000}, format='json')
@@ -85,6 +92,7 @@ class PaymentsViewSetTestCase(APITestCase):
 
     @patch('payments.views.stripe.PaymentIntent.create')
     def test_create_stripe_intent_for_own_payment(self, mock_create):
+        """Bemor o'ziga tegishli to'lov uchun Stripe intent yarata olishini tekshiradi."""
         mock_create.return_value.id = 'pi_test123'
         mock_create.return_value.client_secret = 'secret_test123'
 
@@ -95,12 +103,14 @@ class PaymentsViewSetTestCase(APITestCase):
         self.assertEqual(response.data['client_secret'], 'secret_test123')
 
     def test_create_stripe_intent_for_other_patient_payment_returns_404(self):
+        """Boshqa bemorning to'lovi uchun Stripe intent so'ralganda 404 qaytishini tekshiradi."""
         url = reverse('stripe-create-intent')
         self.client.force_authenticate(self.other_patient_user)
         response = self.client.post(url, {'payment_id': self.payment.pk}, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_stripe_webhook_invalid_signature_rejected(self):
+        """Noto'g'ri (yoki mavjud bo'lmagan) imzo bilan yuborilgan Stripe webhook rad etilishini tekshiradi."""
         url = reverse('stripe-webhook')
         self.client.force_authenticate(user=None)
         response = self.client.post(url, {}, format='json')

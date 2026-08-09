@@ -18,6 +18,16 @@ national_id_validator = RegexValidator(
 )
 
 class Patient(models.Model):
+    """Tizimdagi bemor (patient) haqidagi ma'lumotlarni saqlaydi.
+
+    ``User`` modeli bilan bir-birga bog'langan (OneToOne), ismi (o'zbek va
+    rus tillarida), jinsi, tug'ilgan sanasi, telefon raqami, JSHSHIR va
+    manzil kabi maydonlarni o'z ichiga oladi. ``name_uz``/``name_ru``,
+    ``phone_number`` va ``national_id`` maydonlari mos ravishda
+    ``name_validator``, ``phone_validator`` va ``national_id_validator``
+    orqali tekshiriladi.
+    """
+
     GENDER_CHOICE = (
         ('erkak', 'Erkak'),
         ('ayol', 'Ayol')
