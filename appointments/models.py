@@ -27,7 +27,7 @@ class Appointment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     cancel_reason = models.TextField(blank=True)
     cancelled_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='cancelled_appointments')
-    consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='in_person')
+    consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='video')
 
     def __str__(self):
         return f"{self.patient} -> {self.doctor} ({self.start_time})"
