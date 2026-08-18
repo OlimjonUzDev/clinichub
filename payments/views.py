@@ -23,15 +23,18 @@ class CreateStripeIntentView(APIView):
         if not payment:
             return Response({'error': "To'lov topilmadi"}, status=404)
 
-        intent = stripe.PaymentIntent.create(
-            amount=int(payment.amount * 100),  # Stripe tiyin/cent bilan ishlaydi
-            currency='usd',                     # UZS Stripe'da yo'q, shu sabab hozircha USD
-            metadata={'payment_id': payment.id},
-        )
+        try:
+            intent = stripe.PaymentIntent.create(
+                amount=int(payment.amount * 100),
+                currency='usd',
+                metadata={'payment_id': payment.id},
+            )
+        except stripe.error.StripeError:
+            return Response({'error': "To'lov tizimida xatolik yuz berdi, birozdan so'ng qayta urinib ko'ring"}, status=502)
+
         payment.stripe_charge_id = intent.id
         payment.save()
         return Response({'client_secret': intent.client_secret})
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StripeWebhookView(APIView):
