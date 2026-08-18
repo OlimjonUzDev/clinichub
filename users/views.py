@@ -2,6 +2,7 @@ import random
 from datetime import timedelta
 
 from django.utils import timezone
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -56,10 +57,11 @@ class MeView(APIView):
 
 
 class RequestOTPView(APIView):
-    """Telefon raqamiga bir martalik (OTP) kod yuboradi."""
     permission_classes = [AllowAny]
 
     def post(self, request):
+        if not settings.SMS_OTP_ENABLED:
+            return Response({"detail": "SMS orqali vaqtinchalik o'chirilgan"}, status=503)
         serializer = OTPRequestSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data['phone_number']
@@ -85,14 +87,11 @@ class RequestOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
-    """OTP kodni tasdiqlaydi va JWT (access + refresh) qaytaradi.
-
-    Mavjud (User.phone_number bo'yicha topilgan) patient uchun — kirish.
-    Topilmasa — parolsiz yangi patient User yaratiladi (ro'yxatdan o'tish).
-    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        if not settings.SMS_OTP_ENABLED:
+            return Response({"detail": "SMS orqali vaqtinchalik o'chirilgan"}, status=503)
         serializer = OTPVerifySerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data['phone_number']

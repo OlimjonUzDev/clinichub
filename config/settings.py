@@ -227,3 +227,5 @@ LOGGING = {
         },
     },
 }
+
+SMS_OTP_ENABLED = os.getenv('SMS_OTP_ENABLED', 'False') == 'True'

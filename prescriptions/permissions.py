@@ -2,7 +2,11 @@ from rest_framework import permissions
 
 class IsAdminOrOwnerPrescription(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated
+        if not request.user.is_authenticated:
+            return False
+        if request.method == 'POST':
+            return request.user.role in ('admin', 'doctor')
+        return True
     
     def has_object_permission(self, request, view, obj):
         if request.user.role == 'admin':
@@ -13,7 +17,11 @@ class IsAdminOrOwnerPrescription(permissions.BasePermission):
     
 class IsAdminOrOwnerPrescriptionItem(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated
+        if not request.user.is_authenticated:
+            return False
+        if request.method == 'POST':
+            return request.user.role in ('admin', 'doctor')
+        return True
     
     def has_object_permission(self, request, view, obj):
         if request.user.role == 'admin':

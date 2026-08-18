@@ -10,6 +10,14 @@ class PrescriptionItemSerializer(serializers.ModelSerializer):
         extra_kwargs = {'prescription': {'required': False}}
         fields = '__all__'
 
+    def validate(self, attrs):
+        prescription = attrs.get('prescription')
+        if prescription:
+            request = self.context['request']
+            if request.user.role == 'doctor' and prescription.doctor.user != request.user:
+                raise serializers.ValidationError("Bu retsept sizga tegishli emas.")
+        return attrs
+
 
 class PrescriptionSerializer(serializers.ModelSerializer):
 
@@ -18,9 +26,22 @@ class PrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prescription
         fields = '__all__'
+        read_only_fields = ['doctor', 'patient']
+
+    def validate(self, attrs):
+        appointment = attrs.get('appointment') or self.instance.appointment
+        request = self.context['request']
+        if request.user.role == 'doctor' and appointment.doctor.user != request.user:
+            raise serializers.ValidationError("Bu appointment sizga tegishli emas")
+        if appointment.status != 'completed':
+            raise serializers.ValidationError("Retsept faqat 'completed' holatidagi appointment uchun yoziladi")
+        return attrs
+    
 
     def create(self, validated_data):
-        # So'rovdan dorilar listini ajratib olamiz
+        appointment = validated_data['appointment']
+        validated_data['doctor'] = appointment.doctor
+        validated_data['patient'] = appointment.patient
         items_data = self.context['request'].data.get('items', [])
 
         item_serializers = []
