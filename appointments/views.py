@@ -1,4 +1,5 @@
 import datetime
+
 from rest_framework.views import APIView
 from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
@@ -7,12 +8,14 @@ from rest_framework import status
 from rest_framework.decorators import action
 
 from django.db.models import Q
+from django.db import transaction
 
 from .models import Appointment, Rating
 from .serializers import AppointmentSerializers, RatingSerializers
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from users.permissions import IsPatient
 from .permissions import IsAdminOrOwnerAppointments, IsAdminOrOwnerRating
+from doctors.models import Doctor
 
 class CustomPagination(PageNumberPagination):
     page_size = 6
@@ -39,16 +42,24 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 return Response({'detail': 'Avval doctor profilingizni yarating'}, status=400)
             data['doctor'] = doctor.id
 
-        serializers = self.get_serializer(data=data)
-        if request.user.role == 'patient':
-            serializers.fields.pop('patient', None)
+        doctor_id = data.get('doctor')
 
-        serializers.is_valid(raise_exception=True)
+        with transaction.atomic():
+            if doctor_id:
+                # Shu shifokor uchun boshqa bron urinishlari shu qatorni bo'shatishini kutadi —
+                # shu bilan overlap tekshiruvi va yozish orasidagi "teshik" yopiladi.
+                Doctor.objects.select_for_update().filter(pk=doctor_id).first()
 
-        if patient:
-            serializers.save(patient=patient)
-        else:
-            serializers.save()
+            serializers = self.get_serializer(data=data)
+            if request.user.role == 'patient':
+                serializers.fields.pop('patient', None)
+
+            serializers.is_valid(raise_exception=True)
+
+            if patient:
+                serializers.save(patient=patient)
+            else:
+                serializers.save()
 
         headers = self.get_success_headers(serializers.data)
         return Response(serializers.data, status=status.HTTP_201_CREATED, headers=headers)
