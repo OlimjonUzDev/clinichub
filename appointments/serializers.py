@@ -8,7 +8,7 @@ class AppointmentSerializers(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
-        read_only_fields = ['status', 'cancelled_by', 'patient', 'doctor']
+        read_only_fields = ['status', 'cancelled_by']
 
     def validate(self, attrs):
         start = attrs.get('start_time', getattr(self.instance, 'start_time', None))
@@ -33,6 +33,11 @@ class AppointmentSerializers(serializers.ModelSerializer):
             if local_start.time() < schedule.start_time or local_end.time() > schedule.end_time:
                 raise serializers.ValidationError("Vaqt doktorning ish jadvalidan tashqarida")
         return attrs
+
+    def update(self, instance, validated_data):
+        validated_data.pop('patient', None)
+        validated_data.pop('doctor', None)
+        return super().update(instance, validated_data)
 
 class RatingSerializers(serializers.ModelSerializer):
     class Meta:

@@ -25,23 +25,34 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     search_fields = ['patient__name_uz', 'patient__name_ru']
 
     def create(self, request, *args, **kwargs):
-        serializers = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        patient = None
+
         if request.user.role == 'patient':
-            serializers.fields.pop('patient', None)
             patient = getattr(request.user, 'patient', None)
             if not patient:
                 return Response({'detail': 'Avval bemor profilingizni yarating'}, status=400)
 
+        if request.user.role == 'doctor':
+            doctor = getattr(request.user, 'doctor', None)
+            if not doctor:
+                return Response({'detail': 'Avval doctor profilingizni yarating'}, status=400)
+            data['doctor'] = doctor.id
+
+        serializers = self.get_serializer(data=data)
+        if request.user.role == 'patient':
+            serializers.fields.pop('patient', None)
+
         serializers.is_valid(raise_exception=True)
 
-        if request.user.role == 'patient':
+        if patient:
             serializers.save(patient=patient)
         else:
             serializers.save()
 
         headers = self.get_success_headers(serializers.data)
         return Response(serializers.data, status=status.HTTP_201_CREATED, headers=headers)
-
+    
     @action(detail=True, methods=['post'])
     def confirm(self, request, pk=None):
         appointment = self.get_object()  # IsAdminOrOwnerAppointments avtomatik tekshiradi
