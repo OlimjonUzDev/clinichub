@@ -4,6 +4,7 @@ from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 
 from django.db.models import Q
 
@@ -40,6 +41,39 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializers.data)
         return Response(serializers.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['post'])
+    def confirm(self, request, pk=None):
+        appointment = self.get_object()  # IsAdminOrOwnerAppointments avtomatik tekshiradi
+        if request.user.role not in ('admin', 'doctor') or appointment.doctor.user != request.user and request.user.role != 'admin':
+            return Response({'detail': "Faqat shifokor yoki admin tasdiqlashi mumkin"}, status=403)
+        if appointment.status != 'pending':
+            return Response({'detail': "Faqat 'pending' holatidagi tashrif tasdiqlanadi"}, status=400)
+        appointment.status = 'confirmed'
+        appointment.save()
+        return Response(self.get_serializer(appointment).data)
+
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        appointment = self.get_object()
+        if request.user.role not in ('admin', 'doctor') or appointment.doctor.user != request.user and request.user.role != 'admin':
+            return Response({'detail': "Faqat shifokor yoki admin yakunlashi mumkin"}, status=403)
+        if appointment.status != 'confirmed':
+            return Response({'detail': "Faqat 'confirmed' holatidagi tashrif yakunlanadi"}, status=400)
+        appointment.status = 'completed'
+        appointment.save()
+        return Response(self.get_serializer(appointment).data)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        appointment = self.get_object()  # patient/doctor/admin — o'ziniki bo'lsa ruxsat bor
+        if appointment.status in ('completed', 'cancelled'):
+            return Response({'detail': "Bu tashrif allaqachon yakunlangan yoki bekor qilingan"}, status=400)
+        appointment.status = 'cancelled'
+        appointment.cancelled_by = request.user
+        appointment.cancel_reason = request.data.get('cancel_reason', '')
+        appointment.save()
+        return Response(self.get_serializer(appointment).data)
 
     def get_queryset(self):
         user = self.request.user

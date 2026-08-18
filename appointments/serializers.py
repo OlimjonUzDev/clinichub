@@ -8,6 +8,7 @@ class AppointmentSerializers(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
+        read_only_fields = ['status', 'cancelled_by', 'patient', 'doctor']
 
     def validate(self, attrs):
         start = attrs.get('start_time', getattr(self.instance, 'start_time', None))
