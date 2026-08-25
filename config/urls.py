@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/v1/notifications/', include('notifications.urls')),
     path('api/v1/prescriptions/', include('prescriptions.urls')),
     path('api/v1/payments/', include('payments.urls')),
+    path('api/v1/chat/', include('chat.urls')),
 
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

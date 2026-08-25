@@ -6,7 +6,11 @@ class IsAppointmentParticipant(permissions.BasePermission):
     def has_permission(self, request, view):
         if not (request.user and request.user.is_authenticated):
             return False
-        appointment_id = view.kwargs.get('appointment_id')
+        appointment_id = (
+            view.kwargs.get('appointment_id')
+            or request.query_params.get('appointment_id')
+            or request.data.get('appointment_id')
+        )
         appointment = Appointment.objects.filter(id=appointment_id).first()
         if appointment is None:
             return False
