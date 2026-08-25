@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_yasg',
     'corsheaders',
+    'channels',
 
     'users',
     'catalog',
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     'notifications',
     'prescriptions',
     'payments',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -89,6 +91,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.;ayers.InMemoryChannelLayer'
+    }
+}
 
 
 # Database
