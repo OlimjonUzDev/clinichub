@@ -29,6 +29,9 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"Payment #{self.id} — {self.provider} — {self.status}"
 
@@ -38,6 +41,9 @@ class PaymentTransaction(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='transactions')
     raw_data = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"Transaction #{self.id} — Payment #{self.payment_id}"

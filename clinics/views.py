@@ -31,7 +31,7 @@ class ClinicViewSet(viewsets.ModelViewSet):
     search_fields = ['medical_center__name_uz', 'medical_center__name_ru']
 
     def get_queryset(self):
-        return Clinic.objects.annotate(doctors_count=Count('doctor'))
+        return Clinic.objects.annotate(doctors_count=Count('doctor')).order_by('-created_at')
 
 
 # Create your views here.

@@ -31,6 +31,9 @@ class Patient(models.Model):
     national_id  = models.CharField(max_length=20, blank=True, validators=[national_id_validator])
     address      = models.CharField(max_length=225, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
     
     def __str__(self):
         return self.user.username

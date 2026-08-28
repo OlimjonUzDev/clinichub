@@ -15,12 +15,18 @@ class MedicalCenter(models.Model):
     status = models.CharField(max_length=225, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.name_uz
 
 class ClinicType(models.Model):
     name_uz = models.CharField(max_length=225)
     name_ru = models.CharField(max_length=225)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.name_uz
@@ -35,6 +41,9 @@ class Clinic(models.Model):
     status = models.CharField(max_length=225, choices=STATUS_CHOICES, default='active')
     phone_number = models.CharField(max_length=225)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.clinic_type} - {self.medical_center}"

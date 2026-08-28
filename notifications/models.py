@@ -13,6 +13,9 @@ class NotificationTemplate(models.Model):
     body_ru = models.TextField()
     type = models.CharField(max_length=225, choices=STATUS_CHOICES)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return self.name
 
@@ -29,3 +32,6 @@ class NotificationLog(models.Model):
     is_sent = models.BooleanField(default=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']

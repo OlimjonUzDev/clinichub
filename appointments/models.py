@@ -29,6 +29,9 @@ class Appointment(models.Model):
     cancelled_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='cancelled_appointments')
     consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='video')
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.patient} -> {self.doctor} ({self.start_time})"
 
@@ -39,6 +42,9 @@ class Rating(models.Model):
     score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.doctor} - {self.score}/5"

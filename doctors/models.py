@@ -37,6 +37,9 @@ class Doctor(models.Model):
     revenue_percentage = models.DecimalField(max_digits=3, decimal_places=2, default=1.00,validators=[MinValueValidator(0), MaxValueValidator(1)],)
     auto_payout = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return self.user.username
 
@@ -57,6 +60,7 @@ class DoctorSchedule(models.Model):
 
     class Meta:
         unique_together = ('doctor', 'weekday')
+        ordering = ['-id']
 
     def __str__(self):
         return str(self.doctor)

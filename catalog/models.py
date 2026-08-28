@@ -4,7 +4,9 @@ from clinics.models import Clinic
 class Speciality(models.Model):
     name_uz = models.CharField(max_length=50)
     name_ru = models.CharField(max_length=50)
-    
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.name_uz
@@ -13,6 +15,9 @@ class RankType(models.Model):
     name_uz = models.CharField(max_length=50)
     name_ru = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name_uz
@@ -31,3 +36,6 @@ class RankPrice(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='video')
+
+    class Meta:
+        ordering = ['-created_at']

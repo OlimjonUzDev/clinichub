@@ -15,6 +15,9 @@ class Prescription(models.Model):
     notes_ru = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"Retsept #{self.id} — {self.patient}"
 
@@ -29,6 +32,9 @@ class PrescriptionItem(models.Model):
     duration_days = models.PositiveIntegerField()    # necha kun ichish kerak
     notes_uz = models.TextField(blank=True)
     notes_ru = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return f"{self.medication_name_uz} — {self.dosage}"

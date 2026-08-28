@@ -20,6 +20,9 @@ class Invoice(models.Model):
     status = models.CharField(max_length=225, choices=INVOICE_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"Invoice #{self.id} - {self.appointment}"
 
@@ -35,5 +38,8 @@ class DoctorPayout(models.Model):
     status = models.CharField(max_length=225, choices=STATUS_CHOICES)
     paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     
