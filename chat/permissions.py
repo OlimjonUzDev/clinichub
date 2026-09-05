@@ -16,7 +16,11 @@ class IsAppointmentParticipant(permissions.BasePermission):
             return False
         if request.user.role == 'admin':
             return True
-        return (
+        is_participant = (
             appointment.patient.user == request.user
             or appointment.doctor.user == request.user
         )
+        if not is_participant:
+            return False
+        invoice = getattr(appointment, 'invoice', None)
+        return invoice is not None and invoice.status == 'paid'

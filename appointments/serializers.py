@@ -43,7 +43,7 @@ class RatingSerializers(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = '__all__'
-        read_only_fields = ['patient', 'doctor', 'appointment']
+        read_only_fields = ['patient', 'doctor']
 
     def validate(self, attrs):
         request = self.context['request']
