@@ -1,9 +1,9 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from .models import Prescription, PrescriptionItem
-from .serializers import PrescriptionSerializer, PrescriptionItemSerializer
-from .permissions import IsAdminOrOwnerPrescription, IsAdminOrOwnerPrescriptionItem
+from .models import Prescription
+from .serializers import PrescriptionSerializer
+from .permissions import IsAdminOrOwnerPrescription
 
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
@@ -27,20 +27,4 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
         appointment_id = self.request.query_params.get('appointment_id')
         if appointment_id:
             queryset = queryset.filter(appointment_id=appointment_id)
-        return queryset
-
-
-class PrescriptionItemViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrOwnerPrescriptionItem]
-    queryset = PrescriptionItem.objects.all()
-    serializer_class = PrescriptionItemSerializer
-
-    def get_queryset(self):
-        queryset = PrescriptionItem.objects.all()
-        user = self.request.user
-
-        if user.role == 'patient':
-            queryset = queryset.filter(prescription__patient__user=user)
-        elif user.role == 'doctor':
-            queryset = queryset.filter(prescription__doctor__user=user)
         return queryset

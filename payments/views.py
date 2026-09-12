@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Payment, PaymentTransaction
-from .serializers import PaymentSerializer, PaymentTransactionSerializer
+from .serializers import PaymentSerializer
 from users.permissions import IsAdmin
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -86,13 +86,3 @@ class PaymentViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'create', 'retrieve']:
             return [IsAuthenticated()]
         return [IsAdmin()]
-
-
-class PaymentTransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdmin]
-    queryset = PaymentTransaction.objects.all()
-    serializer_class = PaymentTransactionSerializer
-
-
-
-
