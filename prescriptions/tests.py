@@ -42,7 +42,7 @@ class PrescriptionsViewSetTestCase(APITestCase):
         self.prescriptionitem = PrescriptionItem.objects.create(prescription=self.prescription, medication_name_uz='Markaziy', dosage='500mg', frequency_uz='kunga2 marta', duration_days=5)
 
     def test_owner_doctor_can_create_prescription_with_items(self):
-        new_appointment = Appointment.objects.create(patient=self.patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 50)))
+        new_appointment = Appointment.objects.create(patient=self.patient, doctor=self.doctor, clinic=self.clinic, start_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 30)), end_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 50)), status='completed')
         url = reverse('prescription-list')
         self.client.force_authenticate(self.doctor_user)
         response = self.client.post(url, {'appointment': new_appointment.pk, 'doctor': self.doctor.pk, 'patient': self.patient.pk, 'diagnosis_uz': 'Gripp', 'items': [{'medication_name_uz': 'Paracetamol', 'dosage': '500mg', 'frequency_uz': 'kuniga 3 marta', 'duration_days': 5}]}, format='json')

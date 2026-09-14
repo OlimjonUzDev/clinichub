@@ -8,6 +8,7 @@ from .permissions import IsAppointmentParticipant
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializers
     permission_classes = [IsAppointmentParticipant]
+    http_method_names = ['get', 'post', 'head', 'options']
 
     def get_queryset(self):
         appointment_id = self.request.query_params.get('appointment_id')

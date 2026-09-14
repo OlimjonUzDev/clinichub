@@ -33,10 +33,9 @@ class PrescriptionSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if request.user.role == 'doctor' and appointment.doctor.user != request.user:
             raise serializers.ValidationError("Bu appointment sizga tegishli emas")
-        if appointment.status != 'completed':
+        if self.instance is None and appointment.status != 'completed':
             raise serializers.ValidationError("Retsept faqat 'completed' holatidagi appointment uchun yoziladi")
         return attrs
-    
 
     def create(self, validated_data):
         appointment = validated_data['appointment']

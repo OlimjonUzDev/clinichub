@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
     'corsheaders',
 
@@ -178,8 +179,10 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = False
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),   # 7 kun
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # 30 kun
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # 7 kun
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')

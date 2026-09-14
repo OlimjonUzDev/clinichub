@@ -12,6 +12,7 @@ from catalog.models import RankType, Speciality
 from clinics.models import Clinic, ClinicType, MedicalCenter
 from doctors.models import Doctor
 from patients.models import Patient
+from billing.models import Invoice
 
 from .models import Conversation, Message
 
@@ -46,7 +47,14 @@ class ChatMessageTestCase(APITestCase):
             start_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 30)),
             end_time=timezone.make_aware(datetime.datetime(2026, 11, 6, 10, 50)),
         )
-
+        Invoice.objects.create(
+            appointment=self.appointment, patient=self.patient,
+            invoice_number='INV-CHAT-001', amount=100000, status='paid',
+        )
+        Invoice.objects.create(
+            appointment=self.other_appointment, patient=self.patient,
+            invoice_number='INV-CHAT-002', amount=100000, status='paid',
+        )
         self.url = reverse('chat-message-list')
 
     def test_unauthenticated_cannot_list(self):

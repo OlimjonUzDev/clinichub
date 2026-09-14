@@ -32,11 +32,7 @@ class Doctor(models.Model):
     avatar = models.URLField(blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='erkak', blank=True)
     is_active = models.BooleanField(default=True)
-    bank_name = models.CharField(max_length=225, blank=True)
-    iban = models.CharField(max_length=34, blank=True)
-    revenue_percentage = models.DecimalField(max_digits=3, decimal_places=2, default=1.00,validators=[MinValueValidator(0), MaxValueValidator(1)],)
-    auto_payout = models.BooleanField(default=False)
-
+    
     class Meta:
         ordering = ['-id']
 

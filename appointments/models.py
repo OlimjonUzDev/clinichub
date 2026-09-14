@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+import uuid
 
 from patients.models import Patient
 from doctors.models import Doctor
@@ -28,6 +29,7 @@ class Appointment(models.Model):
     cancel_reason = models.TextField(blank=True)
     cancelled_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='cancelled_appointments')
     consultation_type = models.CharField(max_length=225, choices=CONSULTATION_CHOICES, default='video')
+    video_room_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         ordering = ['-created_at']

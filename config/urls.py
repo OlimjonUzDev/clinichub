@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, re_path, include
 from drf_yasg import openapi
@@ -7,7 +8,8 @@ from rest_framework import permissions
 from rest_framework_simplejwt.views import(
     TokenObtainPairView,
     TokenRefreshView,
-    TokenVerifyView
+    TokenVerifyView,
+    TokenBlacklistView
 )
 
 class JWTSchemaGenerator(OpenAPISchemaGenerator):
@@ -52,8 +54,12 @@ urlpatterns = [
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schem_view.with_ui(cache_timeout=0), name='schema-json'),
-    path('', schem_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schem_view.with_ui('redoc', cache_timeout=0), name='schema_redoc'),
+    path('api/v1/auth/token/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        re_path(r'^swagger(?P<format>\.json|\.yaml)$', schem_view.with_ui(cache_timeout=0), name='schema-json'),
+        path('', schem_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+        path('redoc/', schem_view.with_ui('redoc', cache_timeout=0), name='schema_redoc'),
+    ]

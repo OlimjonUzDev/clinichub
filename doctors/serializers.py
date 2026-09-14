@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Doctor, DoctorSchedule
 
 class DoctorSerializers(serializers.ModelSerializer):
-    SENSITIVE_FIELDS = ['bank_name', 'iban', 'revenue_percentage', 'auto_payout', 'is_active', 'user']
+    SENSITIVE_FIELDS = ['is_active', 'user']
 
     class Meta:
         model = Doctor

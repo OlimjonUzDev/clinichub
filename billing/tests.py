@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 from unittest.mock import patch
 
-from .models import Invoice, DoctorPayout
+from .models import Invoice
 from clinics.models import MedicalCenter, ClinicType, Clinic
 from patients.models import Patient
 from catalog.models import Speciality, RankType
@@ -44,12 +44,7 @@ class BillingViewSetTestCase(APITestCase):
             appointment=self.appointment, patient=self.patient,
             invoice_number='INV-001', amount=100000,
         )
-
-        self.payout = DoctorPayout.objects.create(
-            doctor=self.doctor, amount=500000,
-            period_from=datetime.date(2026, 7, 1), period_to=datetime.date(2026, 7, 31),
-            status='pending',
-        )
+        
 
     def test_admin_can_list_invoices(self):
         admin_user = User.objects.create_user(username='admin1', password='adminpass1', role='admin')
@@ -76,54 +71,6 @@ class BillingViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.patient_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_admin_can_list_payouts(self):
-        admin = User.objects.create_user(username='admin2', password='qwerty123', role='admin')
-        url = reverse('doctorpayout-list')
-        self.client.force_authenticate(admin)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_doctor_can_list_own_payouts_only(self):
-        other_doctor_user = User.objects.create_user(username='karim2', password='qwerty123', role='doctor')
-        other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
-        DoctorPayout.objects.create(doctor=other_doctor, amount=300000, period_from=datetime.date(2026, 7, 1), period_to=datetime.date(2026, 7, 31), status='pending')
-        url = reverse('doctorpayout-list')
-        self.client.force_authenticate(self.doctor_user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        payout_ids = [item['id'] for item in response.data['results']]
-        self.assertIn(self.payout.pk, payout_ids)
-        self.assertEqual(len(payout_ids), 1)
-        
-    def test_owner_doctor_can_retrieve_payout(self):
-        url = reverse('doctorpayout-detail', args=[self.payout.pk])
-        self.client.force_authenticate(self.doctor_user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_other_doctor_cannot_retrieve_payout(self):
-        other_doctor_user = User.objects.create_user(username='karim', password='qwerty123', role='doctor')
-        other_doctor = Doctor.objects.create(user=other_doctor_user, speciality=self.doctor.speciality, rank_type=self.doctor.rank_type, clinic=self.clinic, name_uz='Karim', name_ru='Карим')
-        url = reverse('doctorpayout-detail', args=[self.payout.pk])
-        self.client.force_authenticate(other_doctor_user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_admin_can_update_payouts_status(self):
-        admin = User.objects.create_user(username='asil', password='password123', role='admin')
-        url = reverse('doctorpayout-detail', args=[self.payout.pk])
-        self.client.force_authenticate(admin)
-        response = self.client.patch(url, {'status': 'paid'}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.payout.refresh_from_db()
-        self.assertEqual(self.payout.status, 'paid')
-
-    def test_owner_doctor_cannot_update_payout(self):
-        url = reverse('doctorpayout-detail', args=[self.payout.pk])
-        self.client.force_authenticate(self.doctor_user)
-        response = self.client.patch(url, {'status': 'paid'}, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_other_patient_cannot_retrieve_invoice(self):
         other_user = User.objects.create_user(username='Ali', password='qwerty11', role='patient')
