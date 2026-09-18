@@ -1,4 +1,5 @@
 import random
+import secrets
 from datetime import timedelta
 
 from django.utils import timezone
@@ -16,6 +17,7 @@ from patients.models import Patient
 from appointments.models import Appointment
 from .permissions import IsAdmin
 from notifications.services import send_sms
+from clinics.models import Clinic
 
 
 class RegisterView(generics.CreateAPIView):
@@ -33,7 +35,6 @@ class UserListView(generics.ListAPIView):
 class DashboardView(APIView):
     permission_classes = [IsAdmin]
     def get(self, request):
-        from clinics.models import Clinic
         return Response({
             'total_doctors':              Doctor.objects.count(),
             'total_patients':             Patient.objects.count(),
@@ -76,7 +77,14 @@ class RequestOTPView(APIView):
                 status=429,
             )
 
-        code = f"{random.randint(0, 999999):06d}"
+        daily_count = OTPCode.objects.filter(
+            phone_number=phone_number,
+            created_at__gte=timezone.now() - timedelta(hours=24),
+        ).count()
+        if daily_count >= 5:  # masalan, kuniga 5 tadan ortiq bo'lmasin
+            return Response({'detail': "Kunlik limit tugadi"}, status=429)
+
+        code = f"{secrets.randbelow(1000000):06d}"
         OTPCode.objects.create(
             phone_number=phone_number,
             code=code,
