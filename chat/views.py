@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import Message, Conversation
 from .serializers import MessageSerializers
@@ -18,3 +20,11 @@ class MessageViewSet(viewsets.ModelViewSet):
         appointment_id = self.request.data.get('appointment_id')
         conversation, _ = Conversation.objects.get_or_create(appointment_id=appointment_id)
         serializer.save(sender=self.request.user, conversation=conversation)
+
+    @action(detail=False, methods=['post'])
+    def mark_read(self, request):
+        appointment_id = request.data.get('appointment_id')
+        Message.objects.filter(
+            conversation__appointment_id=appointment_id
+        ).exclude(sender=request.user).update(is_read=True)
+        return Response({'detail': 'OK'})

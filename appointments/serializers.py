@@ -2,14 +2,25 @@ from rest_framework import serializers
 from django.utils import timezone
 
 from .models import Appointment, Rating
+from chat.models import Message
 from doctors.models import DoctorSchedule
 
 class AppointmentSerializers(serializers.ModelSerializer):
+    unread_message_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Appointment
         fields = '__all__'
         read_only_fields = ['status', 'cancelled_by', 'video_room_token']
 
+    def get_unread_message_count(self, obj):
+        request = self.context.get('request')
+        if not request or not hasattr(obj, 'conversation'):
+            return 0
+        return Message.objects.filter(
+            conversation=obj.conversation, is_read=False
+        ).exclude(sender=request.user).count()
+    
     def validate(self, attrs):
         start = attrs.get('start_time', getattr(self.instance, 'start_time', None))
         end = attrs.get('end_time', getattr(self.instance, 'end_time', None))
