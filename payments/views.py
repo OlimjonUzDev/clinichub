@@ -49,7 +49,7 @@ class StripeWebhookView(APIView):
 
         try:
             event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-        except (ValueError, stripe.error.SignatureVerificationError):
+        except (ValueError, stripe.error.SignatureVerificationError) as e:
             return Response(status=400)
 
         if event['type'] == 'payment_intent.succeeded':
