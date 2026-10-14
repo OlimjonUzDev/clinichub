@@ -190,10 +190,16 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
+    "http://15.134.88.92:8081",
+    "http://15.134.88.92:8082",
+    "http://15.134.88.92:8083",
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "http://15.134.88.92:8081",
+    "http://15.134.88.92:8082",
+    "http://15.134.88.92:8083",
+]
+ALLOWED_HOSTS = [..., "15.134.88.92"]
 _extra_cors = os.getenv('CORS_ALLOWED_ORIGINS', '')
 if _extra_cors:
     CORS_ALLOWED_ORIGINS += [o.strip() for o in _extra_cors.split(',') if o.strip()]
